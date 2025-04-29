@@ -31,6 +31,7 @@
               "node_modules/font-awesome/css/font-awesome.min.css",
               "node_modules/bootswatch/dist/cyborg/bootstrap.min.css",
               "node_modules/ngx-toastr/toastr.css",
+              "node_modules/ngx-spinner/animations/line-scale-pulse-out-rapid.css",
               "src/styles.css"
             ],
             "scripts": []
