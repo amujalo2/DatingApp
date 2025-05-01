@@ -29,6 +29,9 @@ export class AccountService {
       }));
   }
   setCurrentUser(user: User) {
+    if (!user.photoUrl) {
+      user.photoUrl = './assets/user.png';
+  }
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUser.set(user as User);
   }
