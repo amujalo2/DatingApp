@@ -30,7 +30,7 @@ export class AccountService {
   }
   setCurrentUser(user: User) {
     if (!user.photoUrl) {
-      user.photoUrl = './assets/user.png';
+      user.photoUrl = 'https://th.bing.com/th/id/OIP.PoS7waY4-VeqgNuBSxVUogAAAA?rs=1&pid=ImgDetMain';
   }
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUser.set(user as User);

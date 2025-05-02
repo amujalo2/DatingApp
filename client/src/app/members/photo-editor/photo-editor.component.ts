@@ -22,7 +22,7 @@ export class PhotoEditorComponent implements OnInit {
   memberChange = output<Member>();
   ngOnInit(): void {
     if (!this.member().photoUrl) {
-      this.member().photoUrl = './assets/user.png';
+      this.member().photoUrl = 'https://th.bing.com/th/id/OIP.PoS7waY4-VeqgNuBSxVUogAAAA?rs=1&pid=ImgDetMain';
     }
     this.initializeUploader();
   }
