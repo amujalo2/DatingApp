@@ -25,6 +25,8 @@ public class AppUser
     public List<Photo> Photos { get; set; } = [];
     public List<UserLike> LikedByUser { get; set; } = [];
     public List<UserLike> LikedUser { get; set; } = [];
+    public List<Message> MessagesSent { get; set; } = [];
+    public List<Message> MessagesRecived { get; set; } = [];
 
     public int GetAge()
     {

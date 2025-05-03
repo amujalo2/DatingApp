@@ -6,10 +6,16 @@
                 <button class="btn btn-primary" [routerLink]="'/members/' + member().username">
                     <i class="fa fa-user"></i>
                 </button>
+            </li>
+            <li class="list-inline-item">
                 <button class="btn btn-primary" (click)="toggleLike()">
                     <i class="fa fa-heart"></i>
                 </button>
-                <button class="btn btn-primary">
+            </li>
+            <li class="list-inline-item">
+                <button class="btn btn-primary"
+                    routerLink="/members/{{member().username}}"
+                    [queryParams]="{tab: 'Messages'}">
                     <i class="fa fa-envelope"></i>
                 </button>
             </li>
