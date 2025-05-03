@@ -2,7 +2,6 @@ import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavComponent } from "./nav/nav.component";
 import { AccountService } from './_services/account.service';
-import { HomeComponent } from "./home/home.component";
 import { NgxSpinnerComponent } from 'ngx-spinner';
 
 @Component({
@@ -17,10 +16,10 @@ export class AppComponent implements OnInit{
     this.setCurrentUser();
   }
   setCurrentUser() {
-    const user = localStorage.getItem('user');
-    if (user) {
-      this.accountService.currentUser.set(JSON.parse(user));
-    }
+    const userStirng = localStorage.getItem('user');
+    if (!userStirng) return
+    const user = JSON.parse(userStirng);
+    this.accountService.setCurrentUser(user);
   }
   
 }
