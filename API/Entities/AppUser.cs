@@ -1,16 +1,11 @@
 using System;
 using API.Extensions;
+using Microsoft.AspNetCore.Identity;
 
 namespace API.Entities;
 
-public class AppUser
+public class AppUser : IdentityUser<int>
 {
-    public int Id { get; set; }
-
-    public required string UserName { get; set; }
-
-    public byte[] PasswordHash { get; set; } = [];
-    public byte[] PasswordSalt { get; set; } = [];
 
     public DateOnly DateOfBirth { get; set; }
     public required string KnownAs { get; set; } 
@@ -27,6 +22,8 @@ public class AppUser
     public List<UserLike> LikedUser { get; set; } = [];
     public List<Message> MessagesSent { get; set; } = [];
     public List<Message> MessagesRecived { get; set; } = [];
+
+    public ICollection<AppUserRole> UserRoles { get; set; } = [];
 
     public int GetAge()
     {
