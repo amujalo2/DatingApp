@@ -8,14 +8,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-public class LikesController(ILikesRepository likesRepository) : BaseApiController
+public class LikesController(IUnitOfWork unitOfWork) : BaseApiController
 {
     [HttpPost("{targetUserId:int}")]
     public async Task<ActionResult> ToggleLike(int targetUserId)
     {
         var sourceId = User.GetUserId();
         if (sourceId == targetUserId) return BadRequest("You cannot like your self!");
-        var extensingLike = await likesRepository.GetUserLike(sourceId, targetUserId);
+        var extensingLike = await unitOfWork.LikesRepository.GetUserLike(sourceId, targetUserId);
         if(extensingLike == null) 
         {
             var like = new UserLike 
@@ -23,25 +23,25 @@ public class LikesController(ILikesRepository likesRepository) : BaseApiControll
                 SourceUserId = sourceId,
                 LikedUserId = targetUserId
             };
-            likesRepository.AddLike(like);
+            unitOfWork.LikesRepository.AddLike(like);
         }
         else
         {
-            likesRepository.DeleteLike(extensingLike);
+            unitOfWork.LikesRepository.DeleteLike(extensingLike);
         }
-        if (await likesRepository.SaveChanges()) return Ok();
+        if (await unitOfWork.Complete()) return Ok();
         return BadRequest("Faild to update like");
     }
     [HttpGet("list")]
     public async Task<ActionResult<IEnumerable<int>>> GetCurrentUserLikeIds()
     {
-        return Ok(await likesRepository.GetCurrentUserLikeIds(User.GetUserId()));
+        return Ok(await unitOfWork.LikesRepository.GetCurrentUserLikeIds(User.GetUserId()));
     }
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MemberDto>>> GetUserLikes([FromQuery]LikesParams likesParams)
     {
         likesParams.UserID = User.GetUserId();
-        var users = await likesRepository.GetUserLikes(likesParams);
+        var users = await unitOfWork.LikesRepository.GetUserLikes(likesParams);
         Response.AddPaginationHeader(users);
         return Ok(users);
     }
