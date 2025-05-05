@@ -21,7 +21,7 @@ public class LikesController(ILikesRepository likesRepository) : BaseApiControll
             var like = new UserLike 
             {
                 SourceUserId = sourceId,
-                TargetUserId = targetUserId
+                LikedUserId = targetUserId
             };
             likesRepository.AddLike(like);
         }

@@ -25,7 +25,7 @@ public class LikesRepository(DataContext context, IMapper mapper) : ILikesReposi
     {   
         return await context.Likes
             .Where(x => x.SourceUserId == currentUserId)
-            .Select(x => x.TargetUserId)
+            .Select(x => x.LikedUserId)
             .ToListAsync();
     }
 
@@ -43,19 +43,19 @@ public class LikesRepository(DataContext context, IMapper mapper) : ILikesReposi
             case "liked":
                 query = likes
                     .Where(x => x.SourceUserId == likesParams.UserID)
-                    .Select(x => x.TargetUser)
+                    .Select(x => x.LikedUser)
                     .ProjectTo<MemberDto>(mapper.ConfigurationProvider);
                 break;
             case "likedBy":
                 query = likes
-                    .Where(x => x.TargetUserId == likesParams.UserID)
+                    .Where(x => x.LikedUserId == likesParams.UserID)
                     .Select(x => x.SourceUser)
                     .ProjectTo<MemberDto>(mapper.ConfigurationProvider);
                 break;
             default:
                 var likeIds = await GetCurrentUserLikeIds(likesParams.UserID);
                 query = likes
-                    .Where(x => x.TargetUserId == likesParams.UserID && likeIds.Contains(x.SourceUser.Id))
+                    .Where(x => x.LikedUserId == likesParams.UserID && likeIds.Contains(x.SourceUser.Id))
                     .Select(x => x.SourceUser)
                     .ProjectTo<MemberDto>(mapper.ConfigurationProvider);
                 break;
