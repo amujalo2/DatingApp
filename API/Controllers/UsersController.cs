@@ -24,7 +24,8 @@ public class UsersController(IUnitOfWork unitOfWork,
     [HttpGet("{username}")] 
     public async Task<ActionResult<MemberDto>> GetUser(string username)
     {
-        var user = await unitOfWork.UserRepository.GetMemberAsync(username);
+        var currentUser = User.GetUsername();
+        var user = await unitOfWork.UserRepository.GetMemberAsync(username, isCurrentUser: currentUser == username);
         if (user == null) return NotFound();
         return user;
     }
@@ -49,15 +50,12 @@ public class UsersController(IUnitOfWork unitOfWork,
             Url = result.SecureUrl.AbsoluteUri,
             PublicId = result.PublicId
         };
-        if (user.Photos.Count == 0) {
-            photo.IsMain = true;
-        }
         user.Photos.Add(photo);
         if (await unitOfWork.Complete())
         {
             return CreatedAtAction(nameof(GetUser), 
                 new {username = user.UserName}, 
-                mapper.Map<PhotoDto>(photo));
+                    mapper.Map<PhotoDto>(photo));
         }
         return BadRequest("Problem adding photo");
     }
@@ -80,7 +78,7 @@ public class UsersController(IUnitOfWork unitOfWork,
     {
         var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
         if (user == null) return NotFound("User not found");
-        var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
+        var photo = await unitOfWork.PhotoRepository.GetPhotoById(photoId);
         if (photo == null) return NotFound("Photo not found");
         if (photo.IsMain) return BadRequest("You cannot delete your main photo");
         if (photo.PublicId != null)

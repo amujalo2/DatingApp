@@ -56,12 +56,14 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
             userParams.PageNumber, userParams.PageSize);
     }
 
-    public async Task<MemberDto?> GetMemberAsync(string username)
+    public async Task<MemberDto?> GetMemberAsync(string username, bool isCurrentUser)
     {
-        return await context.Users
+        var query = context.Users
             .Where(x => x.UserName == username)
             .ProjectTo<MemberDto>(mapper.ConfigurationProvider)
-            .SingleOrDefaultAsync();
+            .AsQueryable();
+        if(isCurrentUser) query = query.IgnoreQueryFilters();
+        return await query.FirstOrDefaultAsync();
     }
 
 }
