@@ -16,6 +16,9 @@ img.img-thumbnail {
   --btn-secondary-bg: #424242;
   --btn-secondary-hover: #616161;
   --modal-bg: #212121;
+  --input-bg: #2c2c2c;
+  --input-border: #444;
+  --switch-active: #2e7d32;
 }
 
 .photo-gallery-container {
@@ -185,5 +188,52 @@ img.img-thumbnail {
   padding: 1rem;
   border-top: 1px solid var(--border-color);
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Nove klase za anonimnost i poruku */
+.anonymity-toggle {
+  align-self: flex-start;
+  margin-bottom: 1rem;
+}
+
+.form-check-input {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  width: 40px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.form-check-input:checked {
+  background-color: var(--switch-active);
+  border-color: var(--switch-active);
+}
+
+.admin-message {
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.form-control {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--text-color);
+  resize: vertical;
+  border-radius: 6px;
+  padding: 0.75rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #777;
+  box-shadow: 0 0 0 0.2rem rgba(84, 84, 84, 0.25);
+}
+
+.form-check-label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  user-select: none;
 }

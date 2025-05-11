@@ -1,8 +1,63 @@
-.dropdown-toggle, .dropdown-item{
+.dropdown-toggle, .dropdown-item {
     cursor: pointer;
 }
+
 img {
     max-height: 50px;
     border: 2px solid #fff;
     display: inline;
+    border-radius: 50%;
+}
+
+.floating-nav {
+    margin: 15px auto;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 95%;
+    max-width: 1400px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+}
+
+/* Add padding to body to prevent content hiding behind navbar */
+body {
+    padding-top: 90px;
+}
+
+@media (max-width: 767px) {
+    .navbar-collapse {
+        padding: 10px 0;
+    }
+    
+    .navbar-collapse.collapse {
+        display: none;
+    }
+    
+    .navbar-collapse:not(.collapse) {
+        display: block;
+    }
+    
+    /* Improve styling for collapsed menu */
+    .navbar-nav {
+        margin-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        padding-top: 10px;
+    }
+
+    /* Moving the user info and login form below nav items on mobile */
+    .dropdown, form {
+        margin-top: 15px;
+        width: 100%;
+    }
+    
+    form.d-flex {
+        flex-wrap: wrap;
+    }
+    
+    form.d-flex input, form.d-flex button {
+        margin: 5px 0;
+    }
 }

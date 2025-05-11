@@ -29,6 +29,7 @@ public static class ApplicationServiceExtensions
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
         services.AddSignalR();
+        services.AddScoped<UserService>();
         services.AddSingleton<PresenceTracker>();
         return services;
     }

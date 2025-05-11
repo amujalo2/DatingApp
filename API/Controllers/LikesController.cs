@@ -14,8 +14,11 @@ public class LikesController(IUnitOfWork unitOfWork) : BaseApiController
     public async Task<ActionResult> ToggleLike(int targetUserId)
     {
         var sourceId = User.GetUserId();
-        if (sourceId == targetUserId) return BadRequest("You cannot like your self!");
+
+        if (sourceId == targetUserId) 
+            return BadRequest("You cannot like your self!");
         var extensingLike = await unitOfWork.LikesRepository.GetUserLike(sourceId, targetUserId);
+        
         if(extensingLike == null) 
         {
             var like = new UserLike 
