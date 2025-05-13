@@ -32,10 +32,7 @@ public class AdminController : BaseApiController
     [HttpPost("edit-roles/{username}")]
     public async Task<ActionResult> EditRoles(string username, string roles)
     {
-        var (success, errorMessage, updatedRoles) = await _adminHelper.EditRoles(username, roles);
-        
-        if (!success) return BadRequest(errorMessage);
-        
+        var updatedRoles = await _adminHelper.EditRoles(username, roles);
         return Ok(updatedRoles);
     }
 
@@ -51,10 +48,7 @@ public class AdminController : BaseApiController
     [HttpPost("approve-photo/{photoId}")]
     public async Task<ActionResult> ApprovePhoto(int photoId)
     {
-        var (success, errorMessage) = await _adminHelper.ApprovePhoto(photoId);
-        
-        if (!success) return BadRequest(errorMessage);
-        
+        await _adminHelper.ApprovePhoto(photoId);
         return Ok();
     }
 
@@ -62,10 +56,7 @@ public class AdminController : BaseApiController
     [HttpPost("reject-photo/{photoId}")]
     public async Task<ActionResult> RejectPhoto(int photoId)
     {
-        var (success, errorMessage) = await _adminHelper.RejectPhoto(photoId);
-        
-        if (!success) return BadRequest(errorMessage);
-        
+        await _adminHelper.RejectPhoto(photoId);
         return Ok();
     }
 }

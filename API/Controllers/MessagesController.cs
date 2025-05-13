@@ -16,22 +16,17 @@ namespace API.Controllers;
 public class MessagesController : BaseApiController
 {
     private readonly MessageHelper _messageHelper;
-    private readonly IUnitOfWork _unitOfWork;
 
     public MessagesController(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _messageHelper = new MessageHelper(unitOfWork, mapper);
-        _unitOfWork = unitOfWork;
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateMessage(CreateMessageDto createMessageDto)
     {
         var username = User.GetUsername();
-        var (success, errorMessage, message) = await _messageHelper.CreateMessage(createMessageDto, username);
-        
-        if (!success) return BadRequest(errorMessage);
-        
+        var message = await _messageHelper.CreateMessage(createMessageDto, username);
         return Ok(message);
     }
 
@@ -40,7 +35,7 @@ public class MessagesController : BaseApiController
     {
         var messages = await _messageHelper.GetMessagesForUser(messageParams, User.GetUsername());
         Response.AddPaginationHeader(messages);
-        return messages;
+        return Ok(messages);
     }
 
     [HttpGet("thread/{username}")]
@@ -54,10 +49,7 @@ public class MessagesController : BaseApiController
     public async Task<ActionResult> DeleteMessage(int id)
     {
         var username = User.GetUsername();
-        var (success, errorMessage) = await _messageHelper.DeleteMessage(id, username);
-        
-        if (!success) return BadRequest(errorMessage);
-        
+        await _messageHelper.DeleteMessage(id, username);
         return Ok();
     }
 }

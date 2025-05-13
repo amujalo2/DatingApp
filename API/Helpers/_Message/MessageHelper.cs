@@ -3,35 +3,28 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.DTOs;
 using API.Entities;
+using API.Errors;
 using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 
 namespace API.Helpers._Message;
 
-public class MessageHelper
+public class MessageHelper(IUnitOfWork unitOfWork, IMapper mapper)
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IMapper _mapper = mapper;
 
-    public MessageHelper(IUnitOfWork unitOfWork, IMapper mapper)
-    {
-        _unitOfWork = unitOfWork;
-        _mapper = mapper;
-    }
-
-    public async Task<(bool Success, string? ErrorMessage, MessageDto? Message)> CreateMessage(CreateMessageDto createMessageDto, string username)
+    public async Task<MessageDto> CreateMessage(CreateMessageDto createMessageDto, string username)
     {
         if (username == createMessageDto.RecipientUsername.ToLower())
-        {
-            return (false, "You cannot message yourself", null);
-        }
-
+            throw new BadRequestException("You cannot message yourself");
+        
         var sender = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
         var recipient = await _unitOfWork.UserRepository.GetUserByUsernameAsync(createMessageDto.RecipientUsername);
 
         if (recipient == null || sender == null || sender.UserName == null || recipient.UserName == null) 
-            return (false, "Cannot send message at this time", null);
+            throw new BadRequestException("User not found");
 
         var message = new Message
         {
@@ -44,10 +37,10 @@ public class MessageHelper
 
         _unitOfWork.MessageRepository.AddMessage(message);
 
-        if (await _unitOfWork.Complete()) 
-            return (true, null, _mapper.Map<MessageDto>(message));
+        if (!await _unitOfWork.Complete()) 
+            throw new Exception("Failed to save message");
 
-        return (false, "Failed to save message", null);
+        return _mapper.Map<MessageDto>(message);
     }
 
     public async Task<PagedList<MessageDto>> GetMessagesForUser(MessageParams messageParams, string username)
@@ -61,15 +54,12 @@ public class MessageHelper
         return await _unitOfWork.MessageRepository.GetMessageThread(currentUsername, recipientUsername);
     }
 
-    public async Task<(bool Success, string? ErrorMessage)> DeleteMessage(int id, string username)
+    public async Task DeleteMessage(int id, string username)
     {
-        var message = await _unitOfWork.MessageRepository.GetMessage(id);
-
-        if (message == null) 
-            return (false, "Cannot delete this message");
-
+        var message = await _unitOfWork.MessageRepository.GetMessage(id) ?? throw new NotFoundException("Message not found");
+        
         if (message.SenderUsername != username && message.RecipientUsername != username) 
-            return (false, "Unauthorized to delete this message");
+            throw new UnauthorizedAccessException("You are not authorized to delete this message");
 
         if (message.SenderUsername == username) 
             message.SenderDeleted = true;
@@ -82,9 +72,7 @@ public class MessageHelper
             _unitOfWork.MessageRepository.DeleteMessage(message);
         }
 
-        if (await _unitOfWork.Complete()) 
-            return (true, null);
-
-        return (false, "Problem deleting message!");
+        if (!await _unitOfWork.Complete()) 
+            throw new Exception("Problem deleting message");
     }
 }

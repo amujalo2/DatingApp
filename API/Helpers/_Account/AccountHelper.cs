@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.Data;
 using API.DTOs;
 using API.Entities;
+using API.Errors;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
@@ -13,56 +14,47 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Helpers._Account;
 
-public class AccountHelper
+public class AccountHelper(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper)
 {
-    private readonly UserManager<AppUser> _userManager;
-    private readonly ITokenService _tokenService;
-    private readonly IMapper _mapper;
+    private readonly UserManager<AppUser> _userManager = userManager;
+    private readonly ITokenService _tokenService = tokenService;
+    private readonly IMapper _mapper = mapper;
 
-    public AccountHelper(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper)
-    {
-        _userManager = userManager;
-        _tokenService = tokenService;
-        _mapper = mapper;
-    }
-
-    public async Task<(bool Success, string? ErrorMessage, UserDto? UserDto)> Register(RegisterDto registerDto)
+    public async Task<UserDto> Register(RegisterDto registerDto)
     {
         if (await UserExists(registerDto.Username))
-            return (false, "Username is taken!", null);
+            throw new BadRequestException("Username is already taken!");
 
         var user = _mapper.Map<AppUser>(registerDto);
         user.UserName = registerDto.Username.ToLower();
 
         var result = await _userManager.CreateAsync(user, registerDto.Password);
         if (!result.Succeeded) 
-            return (false, string.Join(", ", result.Errors.Select(e => e.Description)), null);
+            throw new BadRequestException(string.Join(", ", result.Errors.Select(e => e.Description)));
 
-        var userDto = new UserDto
+        return new UserDto
         {
             Username = user.UserName,
             Token = await _tokenService.CreateToken(user),
             KnownAs = user.KnownAs,
             Gender = user.Gender,
         };
-
-        return (true, null, userDto);
     }
 
-    public async Task<(bool Success, string? ErrorMessage, UserDto? UserDto)> Login(LoginDto loginDto)
+    public async Task<UserDto> Login(LoginDto loginDto)
     {
         var user = await _userManager.Users
             .Include(p => p.Photos)
             .FirstOrDefaultAsync(x => x.NormalizedUserName == loginDto.Username.ToUpper());
 
         if (user == null || user.UserName == null) 
-            return (false, "Invalid username!", null);
+            throw new UnauthorizedException("Invalid username!");
 
         var result = await _userManager.CheckPasswordAsync(user, loginDto.Password);
         if (!result) 
-            return (false, "Invalid password!", null);
+            throw new UnauthorizedException("Invalid password!");
 
-        var userDto = new UserDto
+        return new UserDto
         {
             Username = user.UserName,
             Token = await _tokenService.CreateToken(user),
@@ -70,8 +62,6 @@ public class AccountHelper
             KnownAs = user.KnownAs,
             Gender = user.Gender
         };
-
-        return (true, null, userDto);
     }
 
     public async Task<bool> UserExists(string username)

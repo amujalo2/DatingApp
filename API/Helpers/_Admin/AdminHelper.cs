@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.Data;
 using API.DTOs;
 using API.Entities;
+using API.Errors;
 using API.Interfaces;
 using API.SignalR;
 using Microsoft.AspNetCore.Identity;
@@ -13,20 +14,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Helpers._Admin;
 
-public class AdminHelper
+public class AdminHelper(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService, IHubContext<PresenceHub> hubContext)
 {
-    private readonly UserManager<AppUser> _userManager;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IPhotoService _photoService;
-    private readonly IHubContext<PresenceHub> _hubContext;
-
-    public AdminHelper(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService, IHubContext<PresenceHub> hubContext)
-    {
-        _userManager = userManager;
-        _unitOfWork = unitOfWork;
-        _photoService = photoService;
-        _hubContext = hubContext;
-    }
+    private readonly UserManager<AppUser> _userManager = userManager;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IPhotoService _photoService = photoService;
+    private readonly IHubContext<PresenceHub> _hubContext = hubContext;
 
     public async Task<List<object>> GetUsersWithRoles()
     {
@@ -42,29 +35,26 @@ public class AdminHelper
         return users.Cast<object>().ToList();
     }
 
-    public async Task<(bool Success, string? ErrorMessage, IList<string>? Roles)> EditRoles(string username, string roles)
+    public async Task<IList<string>> EditRoles(string username, string roles)
     {
         if (string.IsNullOrEmpty(roles))
-            return (false, "You must select at least one role", null);
+            throw new BadRequestException("You must select at least one role");
 
         var selectedRoles = roles.Split(',').ToArray();
-        var user = await _userManager.FindByNameAsync(username);
+        var user = await _userManager.FindByNameAsync(username) ?? throw new NotFoundException("User not found");
         
-        if (user == null)
-            return (false, "User not found", null);
-
         var userRoles = await _userManager.GetRolesAsync(user);
         var result = await _userManager.AddToRolesAsync(user, selectedRoles.Except(userRoles));
         
         if (!result.Succeeded)
-            return (false, "Failed to add roles", null);
+            throw new BadRequestException("Failed to add role");
 
         result = await _userManager.RemoveFromRolesAsync(user, userRoles.Except(selectedRoles));
         
         if (!result.Succeeded)
-            return (false, "Failed to remove from roles", null);
+            throw new BadRequestException("Failed to remove role");
 
-        return (true, null, await _userManager.GetRolesAsync(user));
+        return await _userManager.GetRolesAsync(user);
     }
 
     public async Task<IEnumerable<object>> GetPhotosForModeration()
@@ -72,87 +62,60 @@ public class AdminHelper
         return await _unitOfWork.PhotoRepository.GetUnapprovedPhotos();
     }
 
-    public async Task<(bool Success, string? ErrorMessage)> ApprovePhoto(int photoId)
+    public async Task ApprovePhoto(int photoId)
     {
-        var photo = await _unitOfWork.PhotoRepository.GetPhotoById(photoId);
+        var photo = await _unitOfWork.PhotoRepository.GetPhotoById(photoId) ?? throw new NotFoundException("Photo not found");
         
-        if (photo == null)
-            return (false, "Could not get photo from photo id");
-
         photo.IsApproved = true;
-        var user = await _unitOfWork.PhotoRepository.GetUserByPhotoId(photoId);
+        var user = await _unitOfWork.PhotoRepository.GetUserByPhotoId(photoId) ?? throw new NotFoundException("User not found");
         
-        if (user == null)
-            return (false, "Could not get user from photoID");
-
         if (!user.Photos.Any(x => x.IsMain))
             photo.IsMain = true;
 
-        if (await _unitOfWork.Complete())
-        {
-            // SignalR: Obavesti korisnika
-#pragma warning disable CS8604 // Possible null reference argument.
-            var connections = await PresenceTracker.GetConnectionsForUser(user.UserName);
-#pragma warning restore CS8604 // Possible null reference argument.
-            if (connections != null && connections.Count > 0)
-            {
-                await _hubContext.Clients.Clients(connections).SendAsync("PhotoApproved", new
-                {
-                    message = "Your photo has been approved!"
-                });
-            }
+        if (!await _unitOfWork.Complete())
+            throw new Exception("Failed to approve photo");
 
-            return (true, null);
+        // SignalR: Obavesti korisnika
+#pragma warning disable CS8604 // Possible null reference argument.
+        var connections = await PresenceTracker.GetConnectionsForUser(user.UserName);
+#pragma warning restore CS8604 // Possible null reference argument.
+        if (connections != null && connections.Count > 0)
+        {
+            await _hubContext.Clients.Clients(connections).SendAsync("PhotoApproved", new
+            {
+                message = "Your photo has been approved!"
+            });
         }
-        
-        return (false, "Failed to approve photo");
     }
 
-    public async Task<(bool Success, string? ErrorMessage)> RejectPhoto(int photoId)
+    public async Task RejectPhoto(int photoId)
     {
-        var photo = await _unitOfWork.PhotoRepository.GetPhotoById(photoId);
+        var photo = await _unitOfWork.PhotoRepository.GetPhotoById(photoId) ?? throw new NotFoundException("Photo not found");
         
-        if (photo == null)
-            return (false, "Could not get photo from photo id");
-
         if (photo.PublicId != null)
         {
             var result = await _photoService.DeletePhotoAsync(photo.PublicId);
-            
-            if (result.Result == "ok")
-            {
-                _unitOfWork.PhotoRepository.RemovePhoto(photo);
-            }
-            else
-            {
-                return (false, "Failed to delete photo from cloud storage");
-            }
-        }
-        else
-        {
-            _unitOfWork.PhotoRepository.RemovePhoto(photo);
+
+            if (result.Result != "ok")
+                throw new Exception("Failed to delete photo from cloud storage");
         }
 
-        var user = await _unitOfWork.PhotoRepository.GetUserByPhotoId(photoId);
-        if (user == null)
-            return (true, "Could not get user from photoID");
+        _unitOfWork.PhotoRepository.RemovePhoto(photo);
 
-        if (await _unitOfWork.Complete())
-        {
-            // SignalR: Obavesti korisnika
+        var user = await _unitOfWork.PhotoRepository.GetUserByPhotoId(photoId) ?? throw new NotFoundException("User not found");
+        
+        if (!await _unitOfWork.Complete())
+            throw new Exception("Failed to reject photo");
+
 #pragma warning disable CS8604 // Possible null reference argument.
-            var connections = await PresenceTracker.GetConnectionsForUser(user.UserName);
+        var connections = await PresenceTracker.GetConnectionsForUser(user.UserName);
 #pragma warning restore CS8604 // Possible null reference argument.
-            if (connections != null && connections.Count > 0)
+        if (connections != null && connections.Count > 0)
+        {
+            await _hubContext.Clients.Clients(connections).SendAsync("PhotoRejected", new
             {
-                await _hubContext.Clients.Clients(connections).SendAsync("PhotoRejected", new
-                {
-                    message = "Your photo has been rejected!"
-                });
-            }
-
-            return (true, null);
+                message = "Your photo has been rejected!"
+            });
         }
-        return (true, "Failed to reject photo");
     }
 }
