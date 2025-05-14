@@ -1,8 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import { UserManagementComponent } from "../user-management/user-management.component";
 import { HasRoleDirective } from '../../_directives/has-role.directive';
 import { PhotoManagementComponent } from "../photo-management/photo-management.component";
+import { PresenceService } from '../../_services/presence.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AccountService } from '../../_services/account.service';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-admin-panel',
@@ -11,5 +15,5 @@ import { PhotoManagementComponent } from "../photo-management/photo-management.c
   styleUrl: './admin-panel.component.css'
 })
 export class AdminPanelComponent {
-
+  
 }

@@ -5,6 +5,7 @@ import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { MessageService } from '../../_services/message.service';
 import { FormsModule } from '@angular/forms';
 import { AccountService } from '../../_services/account.service';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-photo-management',
@@ -71,6 +72,11 @@ export class PhotoManagementComponent implements OnInit {
   sendMessage(){
     const formattedMessage = `Regarding your photo: ${this.adminMessage}`;
     if (this.selectedPhoto?.username) {
+      const user = this.accountService.currentUser;
+      if (!user) {
+        this.toastrService.error('You must be logged in to send messages');
+        return;
+      }
       this.messageService.sendMessage(this.selectedPhoto.username, formattedMessage)
         ?.then(() => {
           console.log(`Anonymous message sent to ${this.selectedPhoto?.username}`);
@@ -88,10 +94,14 @@ export class PhotoManagementComponent implements OnInit {
     this.isModalOpen = true;
     this.isAnonymous = false;
     this.adminMessage = "";
+    const user = this.accountService.currentUser();
+      if (!user) return;
+    this.messageService.createHubConnection(user, this.selectedPhoto.username);
     document.body.classList.add('modal-open');
   }
 
   closePhotoModal(): void {
+    this.messageService.stopHubConnection();
     this.isModalOpen = false;
     document.body.classList.remove('modal-open');
     setTimeout(() => {

@@ -23,7 +23,7 @@ export class MemberDetailComponent implements OnInit, OnDestroy{
   private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private accountService = inject(AccountService)
+  private accountService = inject(AccountService);
   member: Member = {} as Member;
   images: GalleryItem[] = [];
   activeTab?: TabDirective;
