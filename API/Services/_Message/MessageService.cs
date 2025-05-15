@@ -8,9 +8,9 @@ using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 
-namespace API.Helpers._Message;
+namespace API.Services._Message;
 
-public class MessageHelper(IUnitOfWork unitOfWork, IMapper mapper)
+public class MessageService(IUnitOfWork unitOfWork, IMapper mapper)
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMapper _mapper = mapper;

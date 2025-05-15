@@ -12,9 +12,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Helpers._Account;
+namespace API.Services._Account;
 
-public class AccountHelper(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper)
+public class AccountService(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper)
 {
     private readonly UserManager<AppUser> _userManager = userManager;
     private readonly ITokenService _tokenService = tokenService;

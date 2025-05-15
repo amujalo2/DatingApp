@@ -12,9 +12,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Helpers._Admin;
+namespace API.Services._Admin;
 
-public class AdminHelper(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService, IHubContext<PresenceHub> hubContext)
+public class AdminService(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService, IHubContext<PresenceHub> hubContext)
 {
     private readonly UserManager<AppUser> _userManager = userManager;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;

@@ -1,51 +1,81 @@
-using System.Diagnostics.Contracts;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using API.DTOs;
-using API.Entities;
+using API.Errors;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
+using API.Services._Likes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-public class LikesController(IUnitOfWork unitOfWork) : BaseApiController
+public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> logger) : BaseApiController
 {
+    private readonly LikesService _likesService = new LikesService(unitOfWork);
+    private readonly ILogger<LikesController> _logger = logger;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="targetUserId"></param>
+    /// <returns></returns>
     [HttpPost("{targetUserId:int}")]
     public async Task<ActionResult> ToggleLike(int targetUserId)
     {
-        var sourceId = User.GetUserId();
-
-        if (sourceId == targetUserId) 
-            return BadRequest("You cannot like your self!");
-        var extensingLike = await unitOfWork.LikesRepository.GetUserLike(sourceId, targetUserId);
-        
-        if(extensingLike == null) 
+        try
         {
-            var like = new UserLike 
-            {
-                SourceUserId = sourceId,
-                LikedUserId = targetUserId
-            };
-            unitOfWork.LikesRepository.AddLike(like);
+            var sourceId = User.GetUserId();
+            await _likesService.ToggleLike(sourceId, targetUserId);
+            return Ok();
         }
-        else
+        catch (BadRequestException ex)
         {
-            unitOfWork.LikesRepository.DeleteLike(extensingLike);
+            _logger.LogError(ex, "Exception in LikesController.ToggleLike");
+            throw;
         }
-        if (await unitOfWork.Complete()) return Ok();
-        return BadRequest("Faild to update like");
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     [HttpGet("list")]
     public async Task<ActionResult<IEnumerable<int>>> GetCurrentUserLikeIds()
     {
-        return Ok(await unitOfWork.LikesRepository.GetCurrentUserLikeIds(User.GetUserId()));
+        try
+        {
+            var userId = User.GetUserId();
+            var ids = await _likesService.GetCurrentUserLikeIds(userId);
+            return Ok(ids);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in LikesController.GetCurrentUserLikeIds");
+            throw;
+        }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="likesParams"></param>
+    /// <returns></returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUserLikes([FromQuery]LikesParams likesParams)
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUserLikes([FromQuery] LikesParams likesParams)
     {
-        likesParams.UserID = User.GetUserId();
-        var users = await unitOfWork.LikesRepository.GetUserLikes(likesParams);
-        Response.AddPaginationHeader(users);
-        return Ok(users);
+        try
+        {
+            likesParams.UserID = User.GetUserId();
+            var users = await _likesService.GetUserLikes(likesParams);
+            Response.AddPaginationHeader(users);
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in LikesController.GetUserLikes");
+            throw;
+        }
+        
     }
 }

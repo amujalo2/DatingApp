@@ -10,9 +10,9 @@ using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 
-namespace API.Helpers._User;
+namespace API.Services._User;
 
-public class UserHelper(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService)
+public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService)
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMapper _mapper = mapper;
