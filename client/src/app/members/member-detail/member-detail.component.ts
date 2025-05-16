@@ -19,7 +19,7 @@ import { HubConnection, HubConnectionState } from '@microsoft/signalr';
 })
 export class MemberDetailComponent implements OnInit, OnDestroy{
   @ViewChild('memberTabs',{static: true}) memberTabs?: TabsetComponent;
-  presenceService = inject(PresenceService);
+  private presenceService = inject(PresenceService);
   private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -81,5 +81,8 @@ export class MemberDetailComponent implements OnInit, OnDestroy{
   }
   ngOnDestroy(): void {
     this.messageService.stopHubConnection();
+  }
+  onlineUsers() {
+    return this.presenceService.onlineUsers();
   }
 }

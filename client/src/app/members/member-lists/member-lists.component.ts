@@ -12,7 +12,7 @@ import { ButtonsModule } from 'ngx-bootstrap/buttons';
   styleUrl: './member-lists.component.css'
 })
 export class MemberListsComponent implements OnInit{
-  membersService = inject(MembersService);
+  private membersService = inject(MembersService);
   genderList = [{value: 'male', display: 'Males'}, {value: 'female', display: 'Females'}]
   ngOnInit(): void {
     if (!this.membersService.paginatedResult()) this.loadMembers();
@@ -29,6 +29,11 @@ export class MemberListsComponent implements OnInit{
       this.membersService.userParams().pageNumber = event.page;
       this.loadMembers();
     }
-
+  }
+  paginatedResult() {
+    return this.membersService.paginatedResult();
+  }
+  userParams() {
+    return this.membersService.userParams();
   }
 }

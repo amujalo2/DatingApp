@@ -12,7 +12,7 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
   styleUrl: './lists.component.css'
 })
 export class ListsComponent implements OnInit, OnDestroy{
-  likesService = inject(LikesService);
+  private likesService = inject(LikesService);
   predicate = 'liked';
   pageNumber = 1;
   pageSize = 5;
@@ -42,5 +42,7 @@ export class ListsComponent implements OnInit, OnDestroy{
       this.loadLikes();
     }
   }
-
+  paginatedResult() {
+    return this.likesService.paginatedResult();
+  }
 }

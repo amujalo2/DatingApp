@@ -14,7 +14,7 @@
     </div>
 </div>
 
-@if (!messageService.paginatedResult()?.items || messageService.paginatedResult()?.items?.length === 0) {
+@if (!paginatedResult()?.items || paginatedResult()?.items?.length === 0) {
     <h3 class="mt-3">No messages</h3>
 } @else {
     <table class="table table-hover mt-3" style="cursor: pointer">
@@ -27,7 +27,7 @@
             </tr>
         </thead>
         <tbody class="align-middle">
-            @for (message of messageService.paginatedResult()?.items; track message.id) {
+            @for (message of paginatedResult()?.items; track message.id) {
                 <tr routerLink="{{getRoute(message)}}" [queryParams]="{tab: 'Messages'}">
                     <td>{{message.content}}</td>
                     <td>
@@ -47,14 +47,14 @@
             </tbody>
         </table>
 }
-@if (messageService.paginatedResult()?.pagination && messageService.paginatedResult()?.pagination?.totalItems! > 0){
+@if (paginatedResult()?.pagination && paginatedResult()?.pagination?.totalItems! > 0){
     <div class="d-flex justify-content-center">
         <pagination 
             [boundaryLinks]="true" 
-            [totalItems]="messageService.paginatedResult()?.pagination!.totalItems"
-            [itemsPerPage]="messageService.paginatedResult()?.pagination!.itemsPerPage"
+            [totalItems]="paginatedResult()?.pagination!.totalItems"
+            [itemsPerPage]="paginatedResult()?.pagination!.itemsPerPage"
             (pageChanged)="pageChange($event)"
-            [(ngModel)]="messageService.paginatedResult()?.pagination!.currentPage"
+            [(ngModel)]="paginatedResult()?.pagination!.currentPage"
             [maxSize]="10"
             previousText="&lsaquo;" 
             nextText="&rsaquo;" 

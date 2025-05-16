@@ -8,7 +8,7 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
   styleUrl: './roles-modal.component.css'
 })
 export class RolesModalComponent {
-  bsModalRef = inject(BsModalRef);
+  private bsModalRef = inject(BsModalRef);
   title = '';
   availableRoles: string[] = [];
   selectedRoles: string[] = [];
@@ -23,6 +23,9 @@ export class RolesModalComponent {
   }
   onSelectRoles() {
     this.rolesUpdated = true;
+    this.bsModalRef.hide();
+  }
+  hide() {
     this.bsModalRef.hide();
   }
 }

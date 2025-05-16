@@ -4,7 +4,7 @@
             <img src="{{member.photoUrl || 'https://th.bing.com/th/id/OIP.PoS7waY4-VeqgNuBSxVUogAAAA?rs=1&pid=ImgDetMain'}}"
                 alt="{{member.knownAs}}" class="card-img img-thumbnail">
             <div class="card-body">
-                @if(presenceService.onlineUsers().includes(member.username)){
+                @if(onlineUsers().includes(member.username)){
                     <div class="mb-2">
                         <i class="fa fa-user-circle text-success">
                             Online now

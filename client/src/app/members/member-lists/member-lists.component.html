@@ -1,6 +1,6 @@
 <div class="row">
     <div class="text-center mt-3">
-        <h2>Your matches - {{membersService.paginatedResult()?.pagination?.totalItems}}</h2>
+        <h2>Your matches - {{paginatedResult()?.pagination?.totalItems}}</h2>
     </div>
     <div class="container mt-3">
         <form #form="ngForm" class="d-flex mb-3" (ngSubmit)="loadMembers()">
@@ -11,7 +11,7 @@
                     class="form-control ms-1" 
                     style="width: 70px;" 
                     name="minAge"
-                    [(ngModel)]="membersService.userParams().minAge">
+                    [(ngModel)]="userParams().minAge">
             </div>
             <div class="d-flex mx-2">
                 <label class="col-form-label">Age to: </label>
@@ -20,7 +20,7 @@
                     class="form-control ms-1" 
                     style="width: 70px;" 
                     name="maxAge"
-                    [(ngModel)]="membersService.userParams().maxAge">
+                    [(ngModel)]="userParams().maxAge">
             </div>
             <div class="d-flex mx-2">
                 <label class="col-form-label">Show </label>
@@ -28,7 +28,7 @@
                     name="gender" 
                     style="width: 130px;" 
                     class="form-select ms-1"
-                    [(ngModel)]="membersService.userParams().gender"
+                    [(ngModel)]="userParams().gender"
                 >
 
                     @for (gender of genderList; track gender.value) {
@@ -53,20 +53,20 @@
                         name="orderBy"
                         (click)="loadMembers()"
                         btnRadio="lastActive"
-                        [(ngModel)]="membersService.userParams().orderBy"
+                        [(ngModel)]="userParams().orderBy"
                     >Last active</button>
                     <button
                         class="btn btn-primary"
                         name="orderBy"
                         (click)="loadMembers()"
                         btnRadio="created"
-                        [(ngModel)]="membersService.userParams().orderBy"
+                        [(ngModel)]="userParams().orderBy"
                     >Newest members</button>
                 </div>
             </div>
         </form>
     </div>
-    @for (member of membersService.paginatedResult()?.items; track member.id) {
+    @for (member of paginatedResult()?.items; track member.id) {
             <div class="col-2">
                 <p>
                     <app-member-card [member]="member"></app-member-card>
@@ -74,14 +74,14 @@
             </div>
         }
 </div>
-@if (membersService.paginatedResult()?.pagination){
+@if (paginatedResult()?.pagination){
     <div class="d-flex justify-content-center">
         <pagination 
             [boundaryLinks]="true" 
-            [totalItems]="membersService.paginatedResult()?.pagination!.totalItems"
-            [itemsPerPage]="membersService.paginatedResult()?.pagination!.itemsPerPage"
+            [totalItems]="paginatedResult()?.pagination!.totalItems"
+            [itemsPerPage]="paginatedResult()?.pagination!.itemsPerPage"
             (pageChanged)="pageChange($event)"
-            [(ngModel)]="membersService.paginatedResult()?.pagination!.currentPage"
+            [(ngModel)]="paginatedResult()?.pagination!.currentPage"
             [maxSize]="10"
             previousText="&lsaquo;" 
             nextText="&rsaquo;" 

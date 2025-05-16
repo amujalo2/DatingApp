@@ -34,4 +34,7 @@ export class NavComponent {
   toggleNavbar() {
     this.isCollapsed = !this.isCollapsed;
   }
+  currentUser() {
+    return this.accountService.currentUser();
+  }
 }

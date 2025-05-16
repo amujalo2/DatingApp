@@ -13,7 +13,7 @@ import { NgIf } from '@angular/common';
 export class MemberMessagesComponent implements AfterViewChecked {
   @ViewChild('messageForm') messageForm?: NgForm;
   @ViewChild('scrollMe') scrollContainer?: any;
-  messageService = inject(MessageService);
+  private messageService = inject(MessageService);
   username = input.required<string>();
   messageContent: string = "";
   loading = false;
@@ -31,5 +31,8 @@ export class MemberMessagesComponent implements AfterViewChecked {
     if(this.scrollContainer) {
       this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
     }
+  }
+  messageThread() {
+    return this.messageService.messageThread();
   }
 }
