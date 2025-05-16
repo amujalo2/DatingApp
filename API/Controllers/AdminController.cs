@@ -17,15 +17,22 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     private readonly ILogger<AdminController> _logger = logger;
 
     /// <summary>
-    /// 
+    /// GET /api/admin/users-with-roles
     /// </summary>
     /// <returns></returns>
     [Authorize(Policy = "RequireAdminRole")]
     [HttpGet("users-with-roles")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> GetUsersWithRoles()
     {
         try
         {
+            _logger.LogDebug($"AdminController - {nameof(GetUsersWithRoles)} invoked.");
             var users = await _adminHelper.GetUsersWithRoles();
             return Ok(users);
         }
@@ -37,17 +44,24 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     }
 
     /// <summary>
-    /// 
+    /// POST /api/admin/edit-roles/{username}
     /// </summary>
     /// <param name="username"></param>
     /// <param name="roles"></param>
     /// <returns></returns>
-    [Authorize(Policy = "RequireAdminRole")]
     [HttpPost("edit-roles/{username}")]
+    [Authorize(Policy = "RequireAdminRole")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> EditRoles(string username, string roles)
     {
         try
         {
+            _logger.LogDebug($"AdminController - {nameof(EditRoles)} invoked. (username: {username}, roles: {roles})");
             var updatedRoles = await _adminHelper.EditRoles(username, roles);
             return Ok(updatedRoles);
         }
@@ -59,15 +73,23 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     }
 
     /// <summary>
-    /// 
+    /// GET /api/admin/photos-to-moderate
     /// </summary>
     /// <returns></returns>
-    [Authorize(Policy = "ModeratePhotoRole")]
     [HttpGet("photos-to-moderate")]
+    [Authorize(Policy = "ModeratePhotoRole")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
+
     public async Task<ActionResult> GetPhotosForModeration()
     {
         try
         {
+            _logger.LogDebug($"AdminController - {nameof(GetPhotosForModeration)} invoked.");
             var photos = await _adminHelper.GetPhotosForModeration();
             return Ok(photos);
         }
@@ -79,16 +101,23 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     }
 
     /// <summary>
-    /// 
+    /// POST /api/admin/approve-photo/{photoId}
     /// </summary>
     /// <param name="photoId"></param>
     /// <returns></returns>
-    [Authorize(Policy = "ModeratePhotoRole")]
     [HttpPost("approve-photo/{photoId}")]
+    [Authorize(Policy = "ModeratePhotoRole")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> ApprovePhoto(int photoId)
     {
         try
         {
+            _logger.LogDebug($"AdminController - {nameof(ApprovePhoto)} invoked. (photoId: {photoId}");
             await _adminHelper.ApprovePhoto(photoId);
             return Ok();
         }
@@ -100,16 +129,23 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     }
 
     /// <summary>
-    /// 
+    /// POST /api/admin/reject-photo/{photoId}
     /// </summary>
     /// <param name="photoId"></param>
     /// <returns></returns>
-    [Authorize(Policy = "ModeratePhotoRole")]
     [HttpPost("reject-photo/{photoId}")]
+    [Authorize(Policy = "ModeratePhotoRole")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> RejectPhoto(int photoId)
     {
         try
         {
+            _logger.LogDebug($"AdminController - {nameof(RejectPhoto)} invoked. (photoId: {photoId}");
             await _adminHelper.RejectPhoto(photoId);
             return Ok();
         }

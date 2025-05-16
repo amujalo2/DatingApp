@@ -16,15 +16,22 @@ public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> lo
     private readonly ILogger<LikesController> _logger = logger;
 
     /// <summary>
-    /// 
+    /// POST /api/likes/{targetUserId:int}
     /// </summary>
     /// <param name="targetUserId"></param>
     /// <returns></returns>
     [HttpPost("{targetUserId:int}")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> ToggleLike(int targetUserId)
     {
         try
         {
+            _logger.LogDebug($"LikesController - {nameof(ToggleLike)} invoked. (targetUserId: {targetUserId})");
             var sourceId = User.GetUserId();
             await _likesService.ToggleLike(sourceId, targetUserId);
             return Ok();
@@ -37,14 +44,21 @@ public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> lo
     }
 
     /// <summary>
-    /// 
+    /// GET /api/likes/list
     /// </summary>
     /// <returns></returns>
     [HttpGet("list")]
+    [ProducesResponseType(typeof(ActionResult<IEnumerable<int>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult<IEnumerable<int>>> GetCurrentUserLikeIds()
     {
         try
         {
+            _logger.LogDebug($"LikesController - {nameof(GetCurrentUserLikeIds)} invoked.");
             var userId = User.GetUserId();
             var ids = await _likesService.GetCurrentUserLikeIds(userId);
             return Ok(ids);
@@ -57,15 +71,22 @@ public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> lo
     }
 
     /// <summary>
-    /// 
+    /// GET /api/likes?predicate={likesParams}
     /// </summary>
     /// <param name="likesParams"></param>
     /// <returns></returns>
     [HttpGet]
+    [ProducesResponseType(typeof(ActionResult<IEnumerable<MemberDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult<IEnumerable<MemberDto>>> GetUserLikes([FromQuery] LikesParams likesParams)
     {
         try
         {
+            _logger.LogDebug($"LikesController - {nameof(GetUserLikes)} invoked. (likesParams: {likesParams})");
             likesParams.UserID = User.GetUserId();
             var users = await _likesService.GetUserLikes(likesParams);
             Response.AddPaginationHeader(users);
@@ -76,6 +97,6 @@ public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> lo
             _logger.LogError(ex, "Exception in LikesController.GetUserLikes");
             throw;
         }
-        
+
     }
 }

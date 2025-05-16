@@ -19,15 +19,22 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
     private readonly ILogger<MessagesController> _logger = logger;
 
     /// <summary>
-    /// 
+    /// POST /api/messages
     /// </summary>
     /// <param name="createMessageDto"></param>
     /// <returns></returns>
     [HttpPost]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<IActionResult> CreateMessage(CreateMessageDto createMessageDto)
     {
         try
         {
+            _logger.LogDebug($"MessagesController - {nameof(CreateMessage)} invoked. (createMessageDto: {createMessageDto})");
             var username = User.GetUsername();
             var message = await _messageHelper.CreateMessage(createMessageDto, username);
             return Ok(message);
@@ -40,15 +47,22 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
     }
 
     /// <summary>
-    /// 
+    /// GET /api/messages?container={messageParams}
     /// </summary>
     /// <param name="messageParams"></param>
     /// <returns></returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessagesForUser([FromQuery]MessageParams messageParams)
+    [ProducesResponseType(typeof(ActionResult<IEnumerable<MessageDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
+    public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessagesForUser([FromQuery] MessageParams messageParams)
     {
         try
         {
+            _logger.LogDebug($"MessagesController - {nameof(GetMessagesForUser)} invoked. (messageParams: {messageParams})");
             var messages = await _messageHelper.GetMessagesForUser(messageParams, User.GetUsername());
             Response.AddPaginationHeader(messages);
             return Ok(messages);
@@ -59,17 +73,25 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
             throw;
         }
     }
+    
 
     /// <summary>
-    /// 
+    /// GET /api/messages/thread/{username}
     /// </summary>
     /// <param name="username"></param>
     /// <returns></returns>
     [HttpGet("thread/{username}")]
+    [ProducesResponseType(typeof(ActionResult<IEnumerable<MessageDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessageThread(string username)
     {
         try
         {
+            _logger.LogDebug($"MessagesController - {nameof(GetMessageThread)} invoked. (username: {username})");
             var currentUsername = User.GetUsername();
             return Ok(await _messageHelper.GetMessageThread(currentUsername, username));
         }
@@ -79,17 +101,24 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
             throw;
         }
     }
-    
+
     /// <summary>
-    /// 
+    /// DELETE /api/messages/{id}
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> DeleteMessage(int id)
     {
         try
         {
+            _logger.LogDebug($"MessagesController - {nameof(DeleteMessage)} invoked. (id: {id})");
             var username = User.GetUsername();
             await _messageHelper.DeleteMessage(id, username);
             return Ok();

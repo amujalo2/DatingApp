@@ -15,40 +15,54 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
     private readonly ILogger<UsersController> _logger = logger;
 
     /// <summary>
-    /// 
+    /// GET /api/users?predicate={userParams}
     /// </summary>
     /// <param name="userParams"></param>
     /// <returns></returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery]UserParams userParams)
+    [ProducesResponseType(typeof(ActionResult<IEnumerable<MemberDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
     {
-        try 
+        try
         {
+            _logger.LogDebug($"UsersController - {nameof(GetUsers)} invoked. (userParams: {userParams})");
             var users = await _userHelper.GetUsers(userParams, User.GetUsername());
             Response.AddPaginationHeader(users);
             return Ok(users);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Exception in UsersController.GetUsers");
             throw;
         }
     }
-    
+
     /// <summary>
-    /// 
+    /// GET /api/users/{username}
     /// </summary>
     /// <param name="username"></param>
     /// <returns></returns>
     [HttpGet("{username}")] 
+    [ProducesResponseType(typeof(ActionResult<MemberDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult<MemberDto>> GetUser(string username)
     {
         try
         {
+            _logger.LogDebug($"UsersController - {nameof(GetUser)} invoked. (username: {username})");
             var user = await _userHelper.GetUser(username, User.GetUsername());
             return Ok(user);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Exception in UsersController.GetUser");
             throw;
@@ -56,19 +70,26 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
     }
 
     /// <summary>
-    /// 
+    /// PUT /api/users
     /// </summary>
     /// <param name="memberUpdateDto"></param>
     /// <returns></returns>
     [HttpPut]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto)
     {
         try
         {
+            _logger.LogDebug($"UsersController - {nameof(UpdateUser)} invoked. (memberUpdateDto: {memberUpdateDto})");
             await _userHelper.UpdateUser(memberUpdateDto, User.GetUsername());
             return NoContent();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Exception in UsersController.UpdateUser");
             throw;
@@ -76,39 +97,53 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
     }
 
     /// <summary>
-    /// 
+    /// POST /api/users/add-photo
     /// </summary>
     /// <param name="file"></param>
     /// <returns></returns>
     [HttpPost("add-photo")]
+    [ProducesResponseType(typeof(ActionResult<PhotoDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file)
     {
-        try 
+        try
         {
+            _logger.LogDebug($"UsersController - {nameof(AddPhoto)} invoked. (file: {file})");
             var photo = await _userHelper.AddPhoto(file, User.GetUsername());
             return CreatedAtAction(nameof(GetUser), new { username = User.GetUsername() }, photo);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Exception in UsersController.AddPhoto");
             throw;
         }
     }
-    
+
     /// <summary>
-    /// 
+    /// PUT /api/users/set-main-photo/{photoId:int}
     /// </summary>
     /// <param name="photoId"></param>
     /// <returns></returns>
     [HttpPut("set-main-photo/{photoId:int}")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> SetMainPhoto(int photoId)
     {
         try
         {
+            _logger.LogDebug($"UsersController - {nameof(SetMainPhoto)} invoked. (photoId: {photoId})");
             await _userHelper.SetMainPhoto(photoId, User.GetUsername());
             return NoContent();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Exception in UsersController.SetMainPhoto");
             throw;
@@ -116,19 +151,26 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
     }
 
     /// <summary>
-    /// 
+    /// DELETE /api/users/delete-photo/{photoId:int}
     /// </summary>
     /// <param name="photoId"></param>
     /// <returns></returns>
     [HttpDelete("delete-photo/{photoId:int}")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> DeletePhoto(int photoId)
     {
         try
         {
+            _logger.LogDebug($"UsersController - {nameof(DeletePhoto)} invoked. (photoId: {photoId})");
             await _userHelper.DeletePhoto(photoId, User.GetUsername());
             return Ok();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Exception in UsersController.DeletePhoto");
             throw;
