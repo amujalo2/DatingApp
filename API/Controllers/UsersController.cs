@@ -6,8 +6,10 @@ using API.Services._User;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace API.Controllers;
+
 [Authorize]
 public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService, ILogger<UsersController> logger) : BaseApiController
 {
@@ -19,6 +21,7 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
     /// </summary>
     /// <param name="userParams"></param>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpGet]
     [ProducesResponseType(typeof(ActionResult<IEnumerable<MemberDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -47,7 +50,8 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
     /// </summary>
     /// <param name="username"></param>
     /// <returns></returns>
-    [HttpGet("{username}")] 
+    /// [AllowAnonymous]
+    [HttpGet("{username}")]
     [ProducesResponseType(typeof(ActionResult<MemberDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -74,6 +78,7 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
     /// </summary>
     /// <param name="memberUpdateDto"></param>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpPut]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -101,6 +106,7 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
     /// </summary>
     /// <param name="file"></param>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpPost("add-photo")]
     [ProducesResponseType(typeof(ActionResult<PhotoDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -128,6 +134,7 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
     /// </summary>
     /// <param name="photoId"></param>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpPut("set-main-photo/{photoId:int}")]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -155,6 +162,7 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
     /// </summary>
     /// <param name="photoId"></param>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpDelete("delete-photo/{photoId:int}")]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

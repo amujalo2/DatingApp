@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using API.Entities;
 using API.Interfaces;
 using API.Services._Admin;
@@ -8,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using API.SignalR;
+using Serilog;
 
 namespace API.Controllers;
 
@@ -20,6 +19,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     /// GET /api/admin/users-with-roles
     /// </summary>
     /// <returns></returns>
+    ///[AllowAnonymous]
     [Authorize(Policy = "RequireAdminRole")]
     [HttpGet("users-with-roles")]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
@@ -49,6 +49,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     /// <param name="username"></param>
     /// <param name="roles"></param>
     /// <returns></returns>
+    ///[AllowAnonymous]
     [HttpPost("edit-roles/{username}")]
     [Authorize(Policy = "RequireAdminRole")]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
@@ -103,8 +104,11 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     /// <summary>
     /// POST /api/admin/approve-photo/{photoId}
     /// </summary>
-    /// <param name="photoId"></param>
+    /// <param name="photoId">
+    /// lorem ipsum
+    /// </param>
     /// <returns></returns>
+    ///[AllowAnonymous]
     [HttpPost("approve-photo/{photoId}")]
     [Authorize(Policy = "ModeratePhotoRole")]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
@@ -133,6 +137,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     /// </summary>
     /// <param name="photoId"></param>
     /// <returns></returns>
+    ///[AllowAnonymous]
     [HttpPost("reject-photo/{photoId}")]
     [Authorize(Policy = "ModeratePhotoRole")]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]

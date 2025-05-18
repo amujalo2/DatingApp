@@ -7,6 +7,7 @@ using API.Helpers;
 using API.Interfaces;
 using API.Services._Likes;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace API.Controllers;
 
@@ -20,6 +21,7 @@ public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> lo
     /// </summary>
     /// <param name="targetUserId"></param>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpPost("{targetUserId:int}")]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -47,6 +49,7 @@ public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> lo
     /// GET /api/likes/list
     /// </summary>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpGet("list")]
     [ProducesResponseType(typeof(ActionResult<IEnumerable<int>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -75,6 +78,7 @@ public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> lo
     /// </summary>
     /// <param name="likesParams"></param>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpGet]
     [ProducesResponseType(typeof(ActionResult<IEnumerable<MemberDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

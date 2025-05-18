@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using API.DTOs;
 using API.Extensions;
 using API.Helpers;
@@ -9,6 +6,7 @@ using API.Services._Message;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace API.Controllers;
 
@@ -23,6 +21,7 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
     /// </summary>
     /// <param name="createMessageDto"></param>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpPost]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -51,6 +50,7 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
     /// </summary>
     /// <param name="messageParams"></param>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpGet]
     [ProducesResponseType(typeof(ActionResult<IEnumerable<MessageDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -80,6 +80,7 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
     /// </summary>
     /// <param name="username"></param>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpGet("thread/{username}")]
     [ProducesResponseType(typeof(ActionResult<IEnumerable<MessageDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -107,6 +108,7 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

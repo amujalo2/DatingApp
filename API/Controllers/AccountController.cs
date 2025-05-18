@@ -1,12 +1,12 @@
-using System;
 using API.DTOs;
 using API.Entities;
 using API.Interfaces;
 using API.Services._Account;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace API.Controllers;
 
@@ -20,6 +20,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
     /// </summary>
     /// <param name="registerDto"></param>
     /// <returns></returns>
+    [AllowAnonymous]
     [HttpPost("register")]
     [ProducesResponseType(typeof(ActionResult<UserDto?>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -47,6 +48,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
     /// </summary>
     /// <param name="loginDto"></param>
     /// <returns></returns>
+    [AllowAnonymous]
     [HttpPost("login")]
     [ProducesResponseType(typeof(ActionResult<UserDto?>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
