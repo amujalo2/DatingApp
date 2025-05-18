@@ -1,68 +1,134 @@
-using System;
 using API.DTOs;
-using API.Entities;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
+using API.Services._Message;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace API.Controllers;
+
 [Authorize]
-public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper) : BaseApiController
+public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<MessagesController> logger) : BaseApiController
 {
+    private readonly MessageService _messageHelper = new MessageService(unitOfWork, mapper);
+    private readonly ILogger<MessagesController> _logger = logger;
+
+    /// <summary>
+    /// POST /api/messages
+    /// </summary>
+    /// <param name="createMessageDto"></param>
+    /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpPost]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<IActionResult> CreateMessage(CreateMessageDto createMessageDto)
     {
-        var username = User.GetUsername();
-        if (username == createMessageDto.RecipientUsername.ToLower())
+        try
         {
-            return BadRequest("You cannot message yourself");
+            _logger.LogDebug($"MessagesController - {nameof(CreateMessage)} invoked. (createMessageDto: {createMessageDto})");
+            var username = User.GetUsername();
+            var message = await _messageHelper.CreateMessage(createMessageDto, username);
+            return Ok(message);
         }
-        var sender = await unitOfWork.UserRepository.GetUserByUsernameAsync(username);
-        var recipient = await unitOfWork.UserRepository.GetUserByUsernameAsync(createMessageDto.RecipientUsername);
-        if (recipient == null || sender == null || sender.UserName == null || recipient.UserName == null) 
-            return BadRequest("Cannot send message at this time");
-        var message = new Message
+        catch (Exception ex)
         {
-            Sender = sender,
-            Recipient = recipient,
-            SenderUsername = sender.UserName,
-            RecipientUsername = recipient.UserName,
-            Content = createMessageDto.Content
-        };
-        unitOfWork.MessageRepository.AddMessage(message);
-        if (await unitOfWork.Complete()) return Ok(mapper.Map<MessageDto>(message));
-        return BadRequest("Failed to save message");
+            _logger.LogError(ex, "Exception in MessagesController.CreateMessage");
+            throw;
+        }
     }
+
+    /// <summary>
+    /// GET /api/messages?container={messageParams}
+    /// </summary>
+    /// <param name="messageParams"></param>
+    /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessagesForUser([FromQuery]MessageParams messageParams)
+    [ProducesResponseType(typeof(ActionResult<IEnumerable<MessageDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
+    public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessagesForUser([FromQuery] MessageParams messageParams)
     {
-        messageParams.Username = User.GetUsername();
-        var messages = await unitOfWork.MessageRepository.GetMessageForUser(messageParams);
-        Response.AddPaginationHeader(messages);
-        return messages;
+        try
+        {
+            _logger.LogDebug($"MessagesController - {nameof(GetMessagesForUser)} invoked. (messageParams: {messageParams})");
+            var messages = await _messageHelper.GetMessagesForUser(messageParams, User.GetUsername());
+            Response.AddPaginationHeader(messages);
+            return Ok(messages);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in MessagesController.GetMessagesForUser");
+            throw;
+        }
     }
+    
+
+    /// <summary>
+    /// GET /api/messages/thread/{username}
+    /// </summary>
+    /// <param name="username"></param>
+    /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpGet("thread/{username}")]
+    [ProducesResponseType(typeof(ActionResult<IEnumerable<MessageDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessageThread(string username)
     {
-        var currentUsername = User.GetUsername();
-        return Ok(await unitOfWork.MessageRepository.GetMessageThread(currentUsername, username));
+        try
+        {
+            _logger.LogDebug($"MessagesController - {nameof(GetMessageThread)} invoked. (username: {username})");
+            var currentUsername = User.GetUsername();
+            return Ok(await _messageHelper.GetMessageThread(currentUsername, username));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in MessagesController.GetMessageThread");
+            throw;
+        }
     }
+
+    /// <summary>
+    /// DELETE /api/messages/{id}
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> DeleteMessage(int id)
     {
-        var username = User.GetUsername();
-        var message = await unitOfWork.MessageRepository.GetMessage(id);
-        if (message == null) return BadRequest("Cannot delete this message");
-        //if (message.Sender.UserName != username && message.Recipient.UserName != username) return Unauthorized();
-        if (message.SenderUsername == username) message.SenderDeleted = true;
-        if (message.RecipientUsername == username) message.RecipientDeleted = true;
-        if (message is {SenderDeleted: true, RecipientDeleted: true}) {
-            unitOfWork.MessageRepository.DeleteMessage(message);
+        try
+        {
+            _logger.LogDebug($"MessagesController - {nameof(DeleteMessage)} invoked. (id: {id})");
+            var username = User.GetUsername();
+            await _messageHelper.DeleteMessage(id, username);
+            return Ok();
         }
-        if(await unitOfWork.Complete()) return Ok();
-        return BadRequest("Problem deleting message!");
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in MessagesController.DeleteMessage");
+            throw;
+        }
     }
 }

@@ -1,62 +1,73 @@
-using System;
-using System.Security.Cryptography;
-using System.Text;
-using API.Data;
 using API.DTOs;
 using API.Entities;
 using API.Interfaces;
+using API.Services._Account;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace API.Controllers;
 
-public class AccountController(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper) : BaseApiController
+public class AccountController(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper, ILogger<AccountController> logger) : BaseApiController
 {
-    
-    [HttpPost("register")] //account/register
-    public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
+    private readonly AccountService _accountHelper = new AccountService(userManager, tokenService, mapper);
+    private readonly ILogger<AccountController> _logger = logger;
+
+    /// <summary>
+    /// POST: /api/account/register
+    /// </summary>
+    /// <param name="registerDto"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [HttpPost("register")]
+    [ProducesResponseType(typeof(ActionResult<UserDto?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
+    public async Task<ActionResult<UserDto?>> Register(RegisterDto registerDto)
     {
-        if (await UserExists(registerDto.Username)) return BadRequest("Username is taken!");
-        using var hmac = new HMACSHA512();    
-        var user = mapper.Map<AppUser>(registerDto);
-        user.UserName = registerDto.Username.ToLower();
-
-        var result = await userManager.CreateAsync(user, registerDto.Password);
-        if(!result.Succeeded) return BadRequest(result.Errors);
-
-        return new UserDto
+        try
         {
-            Username = user.UserName,
-            Token = await tokenService.CreateToken(user),
-            KnownAs = user.KnownAs,
-            Gender = user.Gender,
-        }; 
+            _logger.LogDebug($"AccountController - {nameof(Register)} invoked. (registerDto: ${registerDto})");
+            var userDto = await _accountHelper.Register(registerDto);
+            return Ok(userDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in AccountController.Register");
+            throw;
+        }
     }
 
+    /// <summary>
+    /// POST: /api/account/login
+    /// </summary>
+    /// <param name="loginDto"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
+    [ProducesResponseType(typeof(ActionResult<UserDto?>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
+    public async Task<ActionResult<UserDto?>> Login(LoginDto loginDto)
     {
-        var user = await userManager.Users
-            .Include(p => p.Photos)
-            .FirstOrDefaultAsync(x => x.NormalizedUserName == loginDto.Username.ToUpper());
-        if (user == null || user.UserName == null) return Unauthorized("Invalid username!");
-
-        var result = await userManager.CheckPasswordAsync(user, loginDto.Password);
-        if(!result) return Unauthorized();
-
-        return new UserDto
+        try
         {
-            Username = user.UserName,
-            Token = await tokenService.CreateToken(user),
-            PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
-            KnownAs = user.KnownAs,
-            Gender = user.Gender
-        };
-    }
-    private async Task<bool> UserExists(string username)
-    {
-        return await userManager.Users.AnyAsync(x => x.NormalizedUserName == username.ToUpper());
+            _logger.LogDebug($"AccountController - {nameof(Login)} invoked. (loginDto: ${loginDto})");
+            var userDto = await _accountHelper.Login(loginDto);
+            return Ok(userDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in AccountController.Login");
+            throw;
+        }
     }
 }

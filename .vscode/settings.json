@@ -1,1 +1,4 @@
-{}
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/53962caa-4704-40d5-a82b-b6e7e2f346b0/resourceGroups/appsvc_windows_westeurope/providers/Microsoft.Web/sites/Dating-App-HTEC-Intern",
+    "appService.deploySubpath": "API\\bin\\Publish"
+}

@@ -1,6 +1,6 @@
 <div class="card">
     <div class="car-body">
-        @if (messageService.messageThread().length === 0) {
+        @if (messageThread().length === 0) {
             <p>No messages yet</p>
         } @else {
             <ul 
@@ -13,7 +13,7 @@
                     scrollbar-width: none; 
                     -ms-overflow-style: none;" 
                 class="chat">
-                @for (message of messageService.messageThread(); track message.id) {
+                @for (message of messageThread(); track message.id) {
                     <li>
                         <div>
                             <span class="chat-img float-end">

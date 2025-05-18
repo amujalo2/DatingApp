@@ -99,6 +99,4 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
     {
         context.Connections.Remove(connection);
     }
-
-
 }

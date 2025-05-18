@@ -23,7 +23,7 @@
         </div>
     </div>
     <div class="row mt-3">
-        @for (member of likesService.paginatedResult()?.items; track member.id) {
+        @for (member of paginatedResult()?.items; track member.id) {
             <div class="col-2">
                 <app-member-card [member]="member"></app-member-card>
             </div>
@@ -31,14 +31,14 @@
     </div>
 </div>
 
-@if (likesService.paginatedResult()?.pagination){
+@if (paginatedResult()?.pagination){
     <div class="d-flex justify-content-center">
         <pagination 
             [boundaryLinks]="true" 
-            [totalItems]="likesService.paginatedResult()?.pagination!.totalItems"
-            [itemsPerPage]="likesService.paginatedResult()?.pagination!.itemsPerPage"
+            [totalItems]="paginatedResult()?.pagination!.totalItems"
+            [itemsPerPage]="paginatedResult()?.pagination!.itemsPerPage"
             (pageChanged)="pageChange($event)"
-            [(ngModel)]="likesService.paginatedResult()?.pagination!.currentPage"
+            [(ngModel)]="paginatedResult()?.pagination!.currentPage"
             [maxSize]="10"
             previousText="&lsaquo;" 
             nextText="&rsaquo;" 

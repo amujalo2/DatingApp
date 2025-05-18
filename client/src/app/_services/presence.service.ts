@@ -25,9 +25,11 @@ export class PresenceService {
         .build();
     this.hubConnection.start().catch(error => console.log(error));
     this.hubConnection.on("UserIsOnline", username => {
+      this.toastr.info(username + ' has connected');
       this.onlineUsers.update(users => [...users, username]);
     });
     this.hubConnection.on("UserIsOffline", username => {
+      this.toastr.warning(username + ' has disconnected');
       this.onlineUsers.update(users => users.filter(x => x !== username));
     });
 
@@ -39,7 +41,13 @@ export class PresenceService {
         .onTap
         .pipe(take(1))
         .subscribe(() => this.router.navigateByUrl('/members/' + username + '?tab=Messages'));
-    })
+    });
+    this.hubConnection.on("PhotoApproved", (data: { message: string }) => {
+      this.toastr.success(data.message);
+    });
+    this.hubConnection.on("PhotoRejected", (data: { message: string }) => {
+      this.toastr.error(data.message);
+    });
   }
   stopHubConnection() {
     if (this.hubConnection?.state === HubConnectionState.Connected) {

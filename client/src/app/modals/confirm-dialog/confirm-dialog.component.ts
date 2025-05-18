@@ -8,7 +8,7 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
   styleUrl: './confirm-dialog.component.css'
 })
 export class ConfirmDialogComponent {
-  bsModalRef = inject(BsModalRef);
+  private bsModalRef = inject(BsModalRef);
   title = '';
   message = '';
   btnOkText = '';

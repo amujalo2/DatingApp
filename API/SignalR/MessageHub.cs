@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace API.SignalR;
 
-public class MessageHub(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<PresenceHub> presenceHub, PresenceTracker tracker) : Hub
+public class MessageHub(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<PresenceHub> presenceHub) : Hub
 {
     public override async Task OnConnectedAsync()
     {
@@ -87,6 +87,7 @@ public class MessageHub(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<Pres
             unitOfWork.MessageRepository.AddGroup(group);
         }
         group.Connections.Add(connection);
+        //kontriraj
         if (await unitOfWork.Complete()) return group;
         throw new HubException("Failed to join group");
     }

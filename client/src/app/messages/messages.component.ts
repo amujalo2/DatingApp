@@ -14,7 +14,7 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
   styleUrl: './messages.component.css'
 })
 export class MessagesComponent implements OnInit {
-  messageService = inject(MessageService);
+  private messageService = inject(MessageService);
   container = 'Inbox';
   pageNumber = 1;
   pageSize = 5;
@@ -50,5 +50,8 @@ export class MessagesComponent implements OnInit {
         })
       }
     });
+  }
+  paginatedResult() {
+    return this.messageService.paginatedResult();
   }
 }

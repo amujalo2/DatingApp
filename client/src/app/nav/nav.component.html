@@ -1,11 +1,15 @@
-<nav class="navbar navbar-expand-md py-2 navbar-dark fixed-top bg-primary">
+<nav class="navbar navbar-expand-md py-2 navbar-dark bg-primary floating-nav">
   <div class="container">
-
       <a class="navbar-brand" routerLinkActive="active" routerLink="/">Dating App</a>
+      
+      <button class="navbar-toggler" type="button" (click)="toggleNavbar()" 
+              aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-
+      <div class="navbar-collapse" [ngClass]="{'collapse': isCollapsed}">
           <ul class="navbar-nav mr-auto">
-              @if (accountService.currentUser()) 
+              @if (currentUser()) 
               {
                   <li class="nav-item">
                       <a routerLink="/members" routerLinkActive="active" class="nav-link">Matches</a>
@@ -19,33 +23,33 @@
                   <li class="nav-item" *appHasRole="['Admin', 'Moderator']">
                       <a routerLink="/admin" routerLinkActive="active" class="nav-link">Admin</a>
                   </li>
-          }
-          <li class="nav-item active">
-              <a routerLink="/errors" routerLinkActive="active" class="nav-link">Errors</a>
-          </li>
+              }
+              <li class="nav-item active">
+                  <a routerLink="/errors" routerLinkActive="active" class="nav-link">Errors</a>
+              </li>
           </ul>
 
-      @if (accountService.currentUser()) 
-      {
-          <div dropdown class="dropdown">
-            <img class="me-2" src="{{accountService.currentUser()?.photoUrl  || 'https://th.bing.com/th/id/OIP.PoS7waY4-VeqgNuBSxVUogAAAA?rs=1&pid=ImgDetMain'}}" alt="User main image">
-              <a dropdownToggle class="dropdown-toggle text-light text-decoration-none">Welcome {{ accountService.currentUser()?.knownAs}}</a>
-              <div *dropdownMenu class="dropdown-menu">
-                  <a routerLink="/member/edit" class="dropdown-item">Edit profile</a>
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" (click)="logout()">Logout</a>
+          @if (currentUser()) 
+          {
+              <div dropdown class="dropdown ms-auto">
+                <img class="me-2" src="{{currentUser()?.photoUrl  || 'https://th.bing.com/th/id/OIP.PoS7waY4-VeqgNuBSxVUogAAAA?rs=1&pid=ImgDetMain'}}" alt="User main image">
+                  <a dropdownToggle class="dropdown-toggle text-light text-decoration-none">Welcome {{ currentUser()?.knownAs}}</a>
+                  <div *dropdownMenu class="dropdown-menu">
+                      <a routerLink="/member/edit" class="dropdown-item">Edit profile</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" (click)="logout()">Logout</a>
+                  </div>
               </div>
-          </div>
-      }
+          }
 
-      @if (!accountService.currentUser()) 
-      {
-          
-          <form #loginForm="ngForm" (ngSubmit)="login()" autocomplete="off" class="form-inline d-flex mt-1 mt-md-0">
-              <input name="username" [(ngModel)]="model.username" class="form-control ms-2" type="text" placeholder="Username">
-              <input name="password" [(ngModel)]="model.password" class="form-control ms-2 mr-sm-2" type="password" placeholder="Password">
-              <button class="btn btn-success my-2 ms-2 my-sm-0" type="submit">Login</button>
-          </form>
-      }
+          @if (!currentUser()) 
+          {
+              <form #loginForm="ngForm" (ngSubmit)="login()" autocomplete="off" class="d-flex mt-2 mt-md-0 ms-auto">
+                  <input name="username" [(ngModel)]="model.username" class="form-control ms-2" type="text" placeholder="Username">
+                  <input name="password" [(ngModel)]="model.password" class="form-control ms-2" type="password" placeholder="Password">
+                  <button class="btn btn-success ms-2" type="submit">Login</button>
+              </form>
+          }
       </div>
+  </div>
 </nav>

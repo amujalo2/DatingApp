@@ -1,95 +1,187 @@
 using API.DTOs;
-using API.Entities;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
+using API.Services._User;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace API.Controllers;
+
 [Authorize]
-public class UsersController(IUnitOfWork unitOfWork,
-    IMapper mapper,
-    IPhotoService photoService) : BaseApiController
+public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService, ILogger<UsersController> logger) : BaseApiController
 {
+    private readonly UserService _userHelper = new UserService(unitOfWork, mapper, photoService);
+    private readonly ILogger<UsersController> _logger = logger;
+
+    /// <summary>
+    /// GET /api/users?predicate={userParams}
+    /// </summary>
+    /// <param name="userParams"></param>
+    /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery]UserParams userParams)
+    [ProducesResponseType(typeof(ActionResult<IEnumerable<MemberDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
     {
-        userParams.CurrentUsername = User.GetUsername();
-        var users = await unitOfWork.UserRepository.GetMembersAsync(userParams);
-        Response.AddPaginationHeader(users);
-        return Ok(users);
+        try
+        {
+            _logger.LogDebug($"UsersController - {nameof(GetUsers)} invoked. (userParams: {userParams})");
+            var users = await _userHelper.GetUsers(userParams, User.GetUsername());
+            Response.AddPaginationHeader(users);
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in UsersController.GetUsers");
+            throw;
+        }
     }
-    [HttpGet("{username}")] 
+
+    /// <summary>
+    /// GET /api/users/{username}
+    /// </summary>
+    /// <param name="username"></param>
+    /// <returns></returns>
+    /// [AllowAnonymous]
+    [HttpGet("{username}")]
+    [ProducesResponseType(typeof(ActionResult<MemberDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult<MemberDto>> GetUser(string username)
     {
-        var user = await unitOfWork.UserRepository.GetMemberAsync(username);
-        if (user == null) return NotFound();
-        return user;
+        try
+        {
+            _logger.LogDebug($"UsersController - {nameof(GetUser)} invoked. (username: {username})");
+            var user = await _userHelper.GetUser(username, User.GetUsername());
+            return Ok(user);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in UsersController.GetUser");
+            throw;
+        }
     }
+
+    /// <summary>
+    /// PUT /api/users
+    /// </summary>
+    /// <param name="memberUpdateDto"></param>
+    /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpPut]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto)
     {
-        var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
-        if (user == null) return NotFound("User not found");
-        mapper.Map(memberUpdateDto, user);
-        if (await unitOfWork.Complete()) return NoContent();
-        return BadRequest("Failed to update user");
+        try
+        {
+            _logger.LogDebug($"UsersController - {nameof(UpdateUser)} invoked. (memberUpdateDto: {memberUpdateDto})");
+            await _userHelper.UpdateUser(memberUpdateDto, User.GetUsername());
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in UsersController.UpdateUser");
+            throw;
+        }
     }
+
+    /// <summary>
+    /// POST /api/users/add-photo
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpPost("add-photo")]
+    [ProducesResponseType(typeof(ActionResult<PhotoDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file)
     {
-        var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
-        if (user == null) return BadRequest("Cannot update user");
-        var result = await photoService.AddPhotoAsync(file);
-        if (result.Error != null) return BadRequest(result.Error.Message);
-        var photo = new Photo
+        try
         {
-            Url = result.SecureUrl.AbsoluteUri,
-            PublicId = result.PublicId
-        };
-        if (user.Photos.Count == 0) {
-            photo.IsMain = true;
+            _logger.LogDebug($"UsersController - {nameof(AddPhoto)} invoked. (file: {file})");
+            var photo = await _userHelper.AddPhoto(file, User.GetUsername());
+            return CreatedAtAction(nameof(GetUser), new { username = User.GetUsername() }, photo);
         }
-        user.Photos.Add(photo);
-        if (await unitOfWork.Complete())
+        catch (Exception ex)
         {
-            return CreatedAtAction(nameof(GetUser), 
-                new {username = user.UserName}, 
-                mapper.Map<PhotoDto>(photo));
+            _logger.LogError(ex, "Exception in UsersController.AddPhoto");
+            throw;
         }
-        return BadRequest("Problem adding photo");
     }
+
+    /// <summary>
+    /// PUT /api/users/set-main-photo/{photoId:int}
+    /// </summary>
+    /// <param name="photoId"></param>
+    /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpPut("set-main-photo/{photoId:int}")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> SetMainPhoto(int photoId)
     {
-        var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
-        if (user == null) return NotFound("User not found");
-        var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
-        if (photo == null || photo.IsMain) return BadRequest("Photo not found");
-        var currentMain = user.Photos.FirstOrDefault(x => x.IsMain);
-        if (currentMain != null) currentMain.IsMain = false;
-        photo.IsMain = true;
-
-        if (await unitOfWork.Complete()) return NoContent();
-        return BadRequest("Failed to set main photo");
+        try
+        {
+            _logger.LogDebug($"UsersController - {nameof(SetMainPhoto)} invoked. (photoId: {photoId})");
+            await _userHelper.SetMainPhoto(photoId, User.GetUsername());
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in UsersController.SetMainPhoto");
+            throw;
+        }
     }
+
+    /// <summary>
+    /// DELETE /api/users/delete-photo/{photoId:int}
+    /// </summary>
+    /// <param name="photoId"></param>
+    /// <returns></returns>
+    /// [AllowAnonymous]
     [HttpDelete("delete-photo/{photoId:int}")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> DeletePhoto(int photoId)
     {
-        var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
-        if (user == null) return NotFound("User not found");
-        var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
-        if (photo == null) return NotFound("Photo not found");
-        if (photo.IsMain) return BadRequest("You cannot delete your main photo");
-        if (photo.PublicId != null)
+        try
         {
-            var result = await photoService.DeletePhotoAsync(photo.PublicId);
-            if (result.Error != null) return BadRequest(result.Error.Message);
+            _logger.LogDebug($"UsersController - {nameof(DeletePhoto)} invoked. (photoId: {photoId})");
+            await _userHelper.DeletePhoto(photoId, User.GetUsername());
+            return Ok();
         }
-        user.Photos.Remove(photo);
-        if (await unitOfWork.Complete()) return Ok();
-        return BadRequest("Failed to delete the photo");
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in UsersController.DeletePhoto");
+            throw;
+        }
     }
 }
