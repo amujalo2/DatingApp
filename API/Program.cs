@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-
+//"RestrictedToMinimumLevel": "Debug"
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((hostContext, services, configuration) =>
