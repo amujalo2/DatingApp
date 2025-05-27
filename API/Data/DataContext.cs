@@ -18,6 +18,8 @@ public class DataContext(DbContextOptions options) : IdentityDbContext
     public DbSet<Group> Groups { get; set; }
     public DbSet<Connection> Connections { get; set; }
     public DbSet<Photo> Photos { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<PhotoTag> PhotoTags { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -64,6 +66,23 @@ public class DataContext(DbContextOptions options) : IdentityDbContext
             .OnDelete(DeleteBehavior.Restrict);
         builder.Entity<Photo>()
             .HasQueryFilter(photo => photo.IsApproved);
+
+        builder.Entity<PhotoTag>()
+        .HasKey(pt => new { pt.PhotoId, pt.TagId });
+
+        builder.Entity<PhotoTag>()
+            .HasOne(pt => pt.Photo)
+            .WithMany(p => p.PhotoTags)
+            .HasForeignKey(pt => pt.PhotoId);
+
+        builder.Entity<PhotoTag>()
+            .HasOne(pt => pt.Tag)
+            .WithMany(t => t.PhotoTags)
+            .HasForeignKey(pt => pt.TagId);
+        
+        builder.Entity<Tag>()
+            .HasIndex(t => t.Name)
+            .IsUnique();
 
         builder.ApplyUtcDateTimeConverter();
     }

@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Entities;
+
 [Table("Photos")]
 public class Photo
 {
@@ -10,7 +11,7 @@ public class Photo
     public bool IsMain { get; set; }
     public string? PublicId { get; set; }
     public bool IsApproved { get; set; } = false;
-
+    public ICollection<PhotoTag> PhotoTags { get; set; } = [];
     // Navigation property
     public int AppUserId { get; set; }
     public AppUser AppUser { get; set; } = null!;

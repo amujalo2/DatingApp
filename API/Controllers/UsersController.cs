@@ -114,12 +114,12 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesErrorResponseType(typeof(void))]
-    public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file)
+    public async Task<ActionResult<PhotoDto>> AddPhoto([FromForm] AddPhotoDto addPhotoDto)
     {
         try
         {
-            _logger.LogDebug($"UsersController - {nameof(AddPhoto)} invoked. (file: {file})");
-            var photo = await _userHelper.AddPhoto(file, User.GetUsername());
+            _logger.LogDebug($"UsersController - {nameof(AddPhoto)} invoked. (file: {addPhotoDto})");
+            var photo = await _userHelper.AddPhoto(addPhotoDto, User.GetUsername());
             return CreatedAtAction(nameof(GetUser), new { username = User.GetUsername() }, photo);
         }
         catch (Exception ex)

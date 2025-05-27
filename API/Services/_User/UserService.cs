@@ -40,11 +40,11 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
             throw new Exception("Failed to update user");
     }
 
-    public async Task<PhotoDto> AddPhoto(IFormFile file, string username)
+    public async Task<PhotoDto> AddPhoto(AddPhotoDto addPhotoDto, string username)
     {
         var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username) ?? throw new NotFoundException("User not found");
         
-        var result = await _photoService.AddPhotoAsync(file);
+        var result = await _photoService.AddPhotoAsync(addPhotoDto.File);
         if (result.Error != null)
             throw new BadRequestException(result.Error.Message);
 
@@ -53,6 +53,14 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
             Url = result.SecureUrl.AbsoluteUri,
             PublicId = result.PublicId
         };
+
+        foreach (var tagId in addPhotoDto.TagIds)
+        {
+            photo.PhotoTags.Add(new PhotoTag
+            {
+                TagId = tagId
+            });
+        }
 
         user.Photos.Add(photo);
 
