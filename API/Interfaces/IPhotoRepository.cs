@@ -14,7 +14,7 @@ public interface IPhotoRepository
     Task<Photo?> GetPhotoWithTagsById(int id);
     Task<List<Photo>> GetPhotosByUsername(string username);
     Task<List<string>> GetUsersWithoutMainPhotoAsync(int currentUserId);
-    Task<List<PhotoApprovalStatisticsDto>> GetPhotoApprovalStatisticsAsync(int currentUserId);
+    Task<List<PhotoApprovalStatisticsDto>> GetPhotoStatsApprovalAsync(int currentUserId);
     Task<IEnumerable<TagDto>> GetTags();
     void AddTag(Tag tag);
     void RemovePhoto(Photo photo);

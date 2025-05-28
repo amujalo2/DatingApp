@@ -5,14 +5,13 @@ import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { MessageService } from '../../_services/message.service';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AccountService } from '../../_services/account.service';
-import { take } from 'rxjs';
 import { Tag } from '../../_models/Tag';
 
 @Component({
   selector: 'app-photo-management',
   imports: [ToastrModule, ToastrModule, FormsModule],
   templateUrl: './photo-management.component.html',
-  styleUrl: './photo-management.component.css'
+  styleUrl: './photo-management.component.css',
 })
 export class PhotoManagementComponent implements OnInit {
   private adminService = inject(AdminService);
@@ -26,7 +25,7 @@ export class PhotoManagementComponent implements OnInit {
   adminMessage: string = '';
   tags: Tag[] = [];
   newTag: Tag = {} as Tag;
-  selectedTag: string = '';
+  selectedTag: Tag = {} as Tag;
   filteredPhotos: any[] = [];
 
   ngOnInit(): void {
@@ -36,49 +35,61 @@ export class PhotoManagementComponent implements OnInit {
   }
   approvePhotosForApproval() {
     this.adminService.getPhotosForApproval().subscribe({
-      next: response => {
+      next: (response) => {
         this.photos = response;
         this.filterPhotosByTag();
       },
-      error: er => {
-          this.toastrService.error('Failed to load photos');
-          console.log(er);
-        }
+      error: (er) => {
+        this.toastrService.error('Failed to load photos');
+        console.log(er);
+      },
     });
   }
   approvePhoto(photoId: number) {
-    if(this.isAnonymous){
-      if(this.adminMessage != "") {
+    if (this.isAnonymous) {
+      if (this.adminMessage != '') {
         this.sendMessage();
       } else {
-        this.toastrService.error("Type in the message, that you have decided to send!");
+        this.toastrService.error(
+          'Type in the message, that you have decided to send!'
+        );
       }
     }
     this.adminService.approvePhoto(photoId).subscribe({
-      next:  () => this.photos.splice(this.photos.findIndex(p => p.id === photoId), 1),
-      error: er => {
+      next: () =>
+        this.photos.splice(
+          this.photos.findIndex((p) => p.id === photoId),
+          1
+        ),
+      error: (er) => {
         this.toastrService.error('Failed to approve photo');
         console.log(er);
-      }
+      },
     });
   }
   rejectPhoto(photoId: number) {
-    if(this.isAnonymous){
-      if(this.adminMessage != "") {
+    if (this.isAnonymous) {
+      if (this.adminMessage != '') {
         this.sendMessage();
       } else {
-        this.toastrService.error("Type in the message, that you have decided to send!");
+        this.toastrService.error(
+          'Type in the message, that you have decided to send!'
+        );
       }
     }
     this.adminService.rejectPhoto(photoId).subscribe({
-      next:  () => this.photos.splice(this.photos.findIndex(p => p.id === photoId), 1),
-      error: er => {
+      next: () =>
+        this.photos.splice(
+          this.photos.findIndex((p) => p.id === photoId),
+          1
+        ),
+      error: (er) => {
         this.toastrService.error('Failed to reject photo');
         console.log(er);
-      }
+      },
     });
   }
-  sendMessage(){
+  sendMessage() {
     const formattedMessage = `Regarding your photo: ${this.adminMessage}`;
     if (this.selectedPhoto?.username) {
       const user = this.accountService.currentUser;
@@ -86,11 +97,14 @@ export class PhotoManagementComponent implements OnInit {
         this.toastrService.error('You must be logged in to send messages');
         return;
       }
-      this.messageService.sendMessage(this.selectedPhoto.username, formattedMessage)
+      this.messageService
+        .sendMessage(this.selectedPhoto.username, formattedMessage)
         ?.then(() => {
-          console.log(`Anonymous message sent to ${this.selectedPhoto?.username}`);
+          console.log(
+            `Anonymous message sent to ${this.selectedPhoto?.username}`
+          );
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error sending message:', error);
           this.toastrService.error('Failed to send notification message');
         });
@@ -102,9 +116,9 @@ export class PhotoManagementComponent implements OnInit {
     this.selectedPhoto = photo;
     this.isModalOpen = true;
     this.isAnonymous = false;
-    this.adminMessage = "";
+    this.adminMessage = '';
     const user = this.accountService.currentUser();
-      if (!user) return;
+    if (!user) return;
     this.messageService.createHubConnection(user, this.selectedPhoto.username);
     document.body.classList.add('modal-open');
   }
@@ -116,7 +130,7 @@ export class PhotoManagementComponent implements OnInit {
     setTimeout(() => {
       this.selectedPhoto = null;
       this.isAnonymous = false;
-      this.adminMessage = "";
+      this.adminMessage = '';
     }, 300);
   }
   createTag(form: NgForm) {
@@ -128,7 +142,7 @@ export class PhotoManagementComponent implements OnInit {
         this.getTags();
         form.resetForm();
       },
-      error: err => {
+      error: (err) => {
         if (err.status === 400) {
           this.toastrService.error("You can't create duplicates!");
         } else {
@@ -139,11 +153,29 @@ export class PhotoManagementComponent implements OnInit {
   }
   getTags() {
     return this.adminService.getTags().subscribe({
-      next: response => {
+      next: (response) => {
         this.tags = response;
       },
-      error: error =>
+      error: (error) =>
         this.toastrService.error('Something unexpected happened: ' + error),
+    });
+  }
+  removeTag(tagName: string) {
+    if (!confirm(`Are you sure you want to delete the tag "${tagName}"?`))
+      return;
+    this.adminService.removeTag(tagName).subscribe({
+      next: () => {
+        this.toastrService.success('Tag successfully removed');
+        this.getTags();
+        this.approvePhotosForApproval(); // osveži slike ako treba
+      },
+      error: (error) => {
+        if (error.status === 400) {
+          this.toastrService.error("You can't remove a tag that is in use!");
+        } else {
+          this.toastrService.error('Something unexpected happened: ' + error);
+        }
+      },
     });
   }
   filterPhotosByTag() {
@@ -151,7 +183,8 @@ export class PhotoManagementComponent implements OnInit {
       this.filteredPhotos = this.photos;
     } else {
       this.filteredPhotos = this.photos.filter(
-        photo => photo.tags && photo.tags.some(tag => tag.name === this.selectedTag)
+        (photo) =>
+          photo.tags && photo.tags.some((tag) => tag === this.selectedTag)
       );
     }
   }

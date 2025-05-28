@@ -94,7 +94,6 @@ export class PhotoEditorComponent implements OnInit {
     this.memberService.getPhotosWithTags().subscribe({
       next: photos => {
         this.userPhotos = photos;
-        console.log('User photos loaded:', this.userPhotos);
       },
       error: err => {
         console.error('Error loading photos:', err);

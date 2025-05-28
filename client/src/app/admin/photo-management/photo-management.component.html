@@ -11,114 +11,125 @@
   <select
     class="form-select w-auto"
     [(ngModel)]="selectedTag"
-    (change)="filterPhotosByTag()">
+    (change)="filterPhotosByTag()"
+  >
     <option value="">All Tags</option>
-    <option *ngFor="let tag of tags" [value]="tag.name">{{ tag.name }}</option>
+    @for (tag of tags; track tag.id) {
+    <option [value]="tag.name">{{ tag.name }}</option>
+    }
   </select>
 </div>
 
 <!-- Photo gallery with modal preview -->
-<div class="photo-gallery-container" style="max-height: 650px; overflow-y: auto;">
+<div
+  class="photo-gallery-container"
+  style="max-height: 650px; overflow-y: auto"
+>
   <div class="row g-3">
     @for (photo of filteredPhotos; track photo.id) {
-      <div class="col-sm-6 col-md-4 col-lg-3 mb-3">
-        <div class="photo-card">
-          <img 
-            src="{{photo.url}}" 
-            alt="photo waiting to be approved" 
-            class="img-thumbnail photo-image"
-            (click)="openPhotoModal(photo)"
-            style="cursor:pointer;"
-          >
-          <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
-            @for (tag of photo.tags; track tag) {
-              <span class="badge bg-secondary px-3 py-2 fs-6 shadow-sm">
-                {{ tag }}
-              </span>
-            }
-          </div>
-          <div class="action-buttons mt-2">
-            <button 
-              class="btn btn-success me-2"
-              (click)="approvePhoto(photo.id)">
-              <i class="bi bi-check-lg"></i> Approve
-            </button>
-            <button 
-              class="btn btn-danger"
-              (click)="rejectPhoto(photo.id)">
-              <i class="bi bi-x-lg"></i> Reject
-            </button>
-          </div>
+    <div class="col-sm-6 col-md-4 col-lg-3 mb-3">
+      <div class="photo-card">
+        <img
+          src="{{ photo.url }}"
+          alt="photo waiting to be approved"
+          class="img-thumbnail photo-image"
+          (click)="openPhotoModal(photo)"
+          style="cursor: pointer"
+        />
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
+          @for (tag of photo.tags; track tag) {
+          <span class="badge bg-secondary px-3 py-2 fs-6 shadow-sm">
+            {{ tag }}
+          </span>
+          }
+        </div>
+        <div class="action-buttons mt-2">
+          <button class="btn btn-success me-2" (click)="approvePhoto(photo.id)">
+            <i class="bi bi-check-lg"></i> Approve
+          </button>
+          <button class="btn btn-danger" (click)="rejectPhoto(photo.id)">
+            <i class="bi bi-x-lg"></i> Reject
+          </button>
         </div>
       </div>
+    </div>
     }
   </div>
 
   <!-- Modal za prikaz uvećane slike -->
   @if (selectedPhoto) {
-    <div class="photo-modal" [class.show]="isModalOpen">
-      <div class="modal-backdrop" (click)="closePhotoModal()"></div>
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Photo Preview</h5>
-          <button type="button" class="btn-close" (click)="closePhotoModal()"></button>
-        </div>
-        <div class="modal-body">
-          <img [src]="selectedPhoto.url" class="modal-image" alt="enlarged photo" style="max-width:100%;max-height:400px;">
-          <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
-            @for (tag of selectedPhoto.tags; track tag) {
-              <span class="badge bg-secondary px-3 py-2 fs-6 shadow-sm">
-                {{ tag }}
-              </span>
-            }
-          </div>
-        </div>
-        <div class="modal-footer flex-column align-items-stretch">
-          <div class="anonymity-toggle mb-3">
-            <div class="form-check form-switch">
-              <input 
-                class="form-check-input" 
-                type="checkbox" 
-                id="anonymitySwitch" 
-                [(ngModel)]="isAnonymous"
-              >
-              <label class="form-check-label" for="anonymitySwitch">
-                <i class="bi bi-incognito me-1"></i> Send message
-              </label>
-            </div>
-          </div>
-          
-          @if (isAnonymous) {
-            <div class="admin-message mb-3 w-100">
-              <textarea 
-                class="form-control" 
-                rows="3" 
-                placeholder="Enter message..." 
-                [(ngModel)]="adminMessage"
-              ></textarea>
-            </div>
+  <div class="photo-modal" [class.show]="isModalOpen">
+    <div class="modal-backdrop" (click)="closePhotoModal()"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Photo Preview</h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="closePhotoModal()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <img
+          [src]="selectedPhoto.url"
+          class="modal-image"
+          alt="enlarged photo"
+          style="max-width: 100%; max-height: 400px"
+        />
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+          @for (tag of selectedPhoto.tags; track tag) {
+          <span class="badge bg-secondary px-3 py-2 fs-6 shadow-sm">
+            {{ tag }}
+          </span>
           }
-          
-          <div class="action-buttons d-flex justify-content-center gap-2">
-            <button 
-              class="btn btn-success"
-              (click)="approvePhoto(selectedPhoto.id); closePhotoModal()">
-              <i class="bi bi-check-lg"></i> Approve
-            </button>
-            <button 
-              class="btn btn-danger"
-              (click)="rejectPhoto(selectedPhoto.id); closePhotoModal()">
-              <i class="bi bi-x-lg"></i> Reject
-            </button>
-            <button 
-              class="btn btn-secondary"
-              (click)="closePhotoModal()">
-              <i class="bi bi-x"></i> Close
-            </button>
+        </div>
+      </div>
+      <div class="modal-footer flex-column align-items-stretch">
+        <div class="anonymity-toggle mb-3">
+          <div class="form-check form-switch">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="anonymitySwitch"
+              [(ngModel)]="isAnonymous"
+            />
+            <label class="form-check-label" for="anonymitySwitch">
+              <i class="bi bi-incognito me-1"></i> Send message
+            </label>
           </div>
+        </div>
+
+        @if (isAnonymous) {
+        <div class="admin-message mb-3 w-100">
+          <textarea
+            class="form-control"
+            rows="3"
+            placeholder="Enter message..."
+            [(ngModel)]="adminMessage"
+          ></textarea>
+        </div>
+        }
+
+        <div class="action-buttons d-flex justify-content-center gap-2">
+          <button
+            class="btn btn-success"
+            (click)="approvePhoto(selectedPhoto.id); closePhotoModal()"
+          >
+            <i class="bi bi-check-lg"></i> Approve
+          </button>
+          <button
+            class="btn btn-danger"
+            (click)="rejectPhoto(selectedPhoto.id); closePhotoModal()"
+          >
+            <i class="bi bi-x-lg"></i> Reject
+          </button>
+          <button class="btn btn-secondary" (click)="closePhotoModal()">
+            <i class="bi bi-x"></i> Close
+          </button>
         </div>
       </div>
     </div>
+  </div>
   }
 </div>
 
@@ -130,9 +141,19 @@
   </p>
   <div class="d-flex flex-wrap justify-content-center gap-2">
     @for (tag of tags; track tag.id) {
-      <div class="badge bg-secondary p-2 px-3 fs-6 shadow-sm">
-        {{ tag.name }}
-      </div>
+    <div
+      class="badge bg-secondary p-2 px-3 fs-6 shadow-sm d-flex align-items-center"
+    >
+      <span>{{ tag.name }}</span>
+      <button
+        type="button"
+        class="btn btn-sm btn-danger ms-2 py-0 px-2"
+        style="line-height: 1"
+        (click)="removeTag(tag.name)"
+      >
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
     }
   </div>
 </div>
@@ -150,14 +171,11 @@
         name="name"
         [(ngModel)]="newTag.name"
         placeholder="Enter tag name"
-        required />
+        required
+      />
     </div>
     <div class="text-center">
-      <button
-        type="submit"
-        class="btn btn-primary">
-        Create Tag
-      </button>
+      <button type="submit" class="btn btn-primary">Create Tag</button>
     </div>
   </form>
 </div>

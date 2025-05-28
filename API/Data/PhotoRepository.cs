@@ -90,13 +90,13 @@ public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoReposi
         }
         return result;
     }
-    public async Task<List<PhotoApprovalStatisticsDto>> GetPhotoApprovalStatisticsAsync(int currentUserId)
+    public async Task<List<PhotoApprovalStatisticsDto>> GetPhotoStatsApprovalAsync(int currentUserId)
     {
         var result = new List<PhotoApprovalStatisticsDto>();
 
         using var command = context.Database.GetDbConnection().CreateCommand();
 
-        command.CommandText = "GetPhotoApprovalStatistics";
+        command.CommandText = "GetPhotoStatsApproval";
         command.CommandType = CommandType.StoredProcedure;
 
         var userIdParam = new SqlParameter("@CurrentUserId", currentUserId);

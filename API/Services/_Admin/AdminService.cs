@@ -147,4 +147,27 @@ public class AdminService(UserManager<AppUser> userManager, IUnitOfWork unitOfWo
     {
         return await _unitOfWork.PhotoRepository.GetTags();
     }
+    public async Task RemoveTagByNameAsync(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tag name is required.");
+        await _unitOfWork.TagRepository.RemoveTagByName(name);
+        if (!await _unitOfWork.Complete())
+            throw new Exception("Failed to remove tag.");
+    }
+
+    public async Task<List<string>> GetUsersWithoutMainPhoto(int currentUserId)
+    {
+        var usersWithoutMainPhoto = await _unitOfWork.PhotoRepository.GetUsersWithoutMainPhotoAsync(currentUserId);
+        if (usersWithoutMainPhoto == null || !usersWithoutMainPhoto.Any())
+            throw new KeyNotFoundException("No users without main photo found.");
+        return usersWithoutMainPhoto;
+    }
+    public async Task<List<PhotoApprovalStatisticsDto>> GetPhotoApprovalStatisticsAsync(int currentUserId)
+    {
+        var stats = await _unitOfWork.PhotoRepository.GetPhotoStatsApprovalAsync(currentUserId);
+        if (stats == null || !stats.Any())
+            throw new KeyNotFoundException("No photo approval stats found for the current user.");
+        return stats.ToList();
+    }
 }

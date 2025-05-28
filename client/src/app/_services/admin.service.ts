@@ -18,6 +18,11 @@ export class AdminService {
   addTag(tag: Tag) {
     return this.http.post(this.baseUrl + 'admin/create-tag', tag);
   }
+  removeTag(tagName: string) {
+    return this.http.delete(this.baseUrl + `admin/delete-tag/${tagName}`, {
+      responseType: 'text',
+    });
+  }
   getUserWithRoles() {
     return this.http.get<User[]>(this.baseUrl + 'admin/users-with-roles');
   }

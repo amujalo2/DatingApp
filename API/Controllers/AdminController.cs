@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR;
 using API.SignalR;
 using API.DTOs;
 using Serilog;
+using System.Security.Claims;
 
 namespace API.Controllers;
 
@@ -180,6 +181,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> CreateTag([FromBody] TagCreateDto tagDto)
     {
         try
@@ -206,6 +208,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
     public async Task<ActionResult> GetTags()
     {
         try
@@ -220,4 +223,88 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
             throw;
         }
     }
+
+    /// <summary>
+    /// DELETE /api/admin/delete-tag/{name}
+    /// Deletes a tag by its name.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    [HttpDelete("delete-tag/{name}")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
+    public async Task<ActionResult> DeleteTag(string name)
+    {
+        try
+        {
+            _logger.LogDebug($"AdminController - {nameof(DeleteTag)} invoked. (name: {name})");
+            await _adminHelper.RemoveTagByNameAsync(name?.Trim() ?? throw new ArgumentException("Tag name cannot be null or empty."));
+            return Ok(new { message = "Tag successfully removed." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in AdminController.DeleteTag");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// GET /api/admin/users-without-main-photo
+    /// Retrieves a list of usernames of users who do not have a main photo.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="UnauthorizedAccessException"></exception>
+    /// <exception cref="KeyNotFoundException"></exception>
+    [HttpGet("users-without-main-photo")]
+    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
+    public async Task<ActionResult<IEnumerable<string>>> GetUsersWithoutMainPhoto()
+    {
+        try
+        {
+            _logger.LogDebug($"AdminController - {nameof(GetUsersWithoutMainPhoto)} invoked.");
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("Cannot get username from token!"));
+            var users = await _adminHelper.GetUsersWithoutMainPhoto(userId) ?? throw new KeyNotFoundException("No users without main photo found.");
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in AdminController.GetUsersWithoutMainPhoto");
+            throw;
+        }
+    }
+    /// <summary>
+    /// GET /api/admin/photo-stats
+    /// Retrieves statistics about photos, including approved and unapproved counts for each user.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="UnauthorizedAccessException"></exception>
+    /// <exception cref="KeyNotFoundException"></exception>
+    [HttpGet("photo-stats")]
+    [ProducesResponseType(typeof(IEnumerable<PhotoApprovalStatisticsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
+    public async Task<ActionResult<IEnumerable<PhotoApprovalStatisticsDto>>> GetPhotoStats()
+    {
+        try
+        {
+            _logger.LogDebug($"AdminController - {nameof(GetPhotoStats)} invoked.");
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("Cannot get username from token!"));
+            var photoStats = await _adminHelper.GetPhotoApprovalStatisticsAsync(userId) ?? throw new KeyNotFoundException("No photo stats found.");
+            return Ok(photoStats);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in AdminController.GetPhotoStats");
+            throw;
+        }
+    }
+
 }
+
