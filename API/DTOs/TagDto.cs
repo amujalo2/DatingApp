@@ -1,4 +1,4 @@
-namespace Api.DTOs;
+namespace API.DTOs;
 
 public class TagDto
 {

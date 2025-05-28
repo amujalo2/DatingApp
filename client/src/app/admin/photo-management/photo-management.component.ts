@@ -151,7 +151,7 @@ export class PhotoManagementComponent implements OnInit {
       this.filteredPhotos = this.photos;
     } else {
       this.filteredPhotos = this.photos.filter(
-        photo => photo.tags && photo.tags.includes(this.selectedTag)
+        photo => photo.tags && photo.tags.some(tag => tag.name === this.selectedTag)
       );
     }
   }

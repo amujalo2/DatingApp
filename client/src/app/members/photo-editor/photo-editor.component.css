@@ -1,3 +1,240 @@
 .nv-file-over {
   border: dotted 3px  red
 }
+/* Photo Card Styles */
+.photo-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: none;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.photo-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.photo-img {
+  transition: filter 0.3s ease;
+  border-radius: 15px 15px 0 0;
+}
+
+.photo-card:hover .photo-img {
+  filter: brightness(1.05);
+}
+
+/* Drop Zone Styles */
+.drop-zone {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.drop-zone:hover {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-color: #2196f3 !important;
+}
+
+.drop-zone.border-primary {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  transform: scale(1.02);
+}
+
+/* Upload Queue Styles */
+.upload-queue {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+/* Modal Styles */
+.modal {
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  border-radius: 15px;
+  border: none;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+.modal-header {
+  border-radius: 15px 15px 0 0;
+  border-bottom: none;
+  padding: 20px 25px;
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  border-radius: 0 0 15px 15px;
+  padding: 20px 25px;
+}
+
+/* Badge Styles */
+.badge {
+  font-size: 0.75em;
+  padding: 0.5em 0.75em;
+}
+
+.badge .btn-close {
+  margin-left: 0.25rem;
+  padding: 0;
+  font-size: 0.6em;
+}
+
+/* Button Styles */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+/* Form Check Styles */
+.form-check {
+  padding: 0.75rem;
+  margin: 0;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.form-check:hover {
+  background-color: #f8f9fa;
+}
+
+.form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.form-check-label {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Progress Bar Styles */
+.progress {
+  height: 8px;
+  border-radius: 10px;
+  background-color: #e9ecef;
+  overflow: hidden;
+}
+
+.progress-bar {
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+/* Card Header Styles */
+.card-header {
+  border-radius: 15px 15px 0 0 !important;
+  border-bottom: none;
+  padding: 20px 25px;
+}
+
+.card-body {
+  padding: 25px;
+}
+
+/* Spinner Styles */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Custom scrollbar for upload queue */
+.upload-queue::-webkit-scrollbar {
+  width: 6px;
+}
+
+.upload-queue::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.upload-queue::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.upload-queue::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .photo-card {
+    margin-bottom: 1rem;
+  }
+  
+  .modal-dialog {
+    margin: 1rem;
+  }
+  
+  .card-body {
+    padding: 15px;
+  }
+  
+  .modal-body {
+    padding: 15px;
+  }
+}
+
+/* Animation for modal backdrop */
+.modal-backdrop {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.5;
+  }
+}
+
+/* Tag preview section styling */
+.bg-light {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+  border: 1px solid #dee2e6;
+}
+
+/* Success and error states */
+.alert {
+  border-radius: 10px;
+  border: none;
+}
+
+/* Loading state */
+.text-center .spinner-border {
+  color: #0d6efd;
+}
+
+/* Custom modal backdrop */
+.custom-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9); /* tamna poluprovidna pozadina */
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

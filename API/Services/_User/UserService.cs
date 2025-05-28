@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Api.DTOs;
+
 using API.DTOs;
 using API.Entities;
 using API.Errors;
@@ -165,7 +165,7 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
 
             var tags = photos.PhotoTags.Select(pt => pt.Tag).ToList();
 
-            return _mapper.Map<IEnumerable<TagDto>>(tags);
+            return _mapper.Map<List<TagDto>>(tags);
         }
         catch (Exception ex)
         {
