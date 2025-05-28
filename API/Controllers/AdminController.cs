@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using API.SignalR;
+using API.DTOs;
 using Serilog;
 
 namespace API.Controllers;
@@ -17,6 +18,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
 
     /// <summary>
     /// GET /api/admin/users-with-roles
+    /// Retrieves a list of users along with their roles.
     /// </summary>
     /// <returns></returns>
     ///[AllowAnonymous]
@@ -45,6 +47,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
 
     /// <summary>
     /// POST /api/admin/edit-roles/{username}
+    /// Edits the roles of a user specified by username.
     /// </summary>
     /// <param name="username"></param>
     /// <param name="roles"></param>
@@ -75,6 +78,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
 
     /// <summary>
     /// GET /api/admin/photos-to-moderate
+    /// Retrieves a list of photos that need moderation.
     /// </summary>
     /// <returns></returns>
     [HttpGet("photos-to-moderate")]
@@ -103,6 +107,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
 
     /// <summary>
     /// POST /api/admin/approve-photo/{photoId}
+    /// Approves a photo for publication by its ID.
     /// </summary>
     /// <param name="photoId">
     /// lorem ipsum
@@ -134,6 +139,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
 
     /// <summary>
     /// POST /api/admin/reject-photo/{photoId}
+    /// Rejects a photo by its ID, removing it from moderation queue and deleting the photo.
     /// </summary>
     /// <param name="photoId"></param>
     /// <returns></returns>
@@ -157,6 +163,60 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception in AdminController.RejectPhoto");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// POST /api/admin/create-tag
+    /// Creates a new tag with the specified name.
+    /// </summary>
+    /// <param name="tagDto"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    [HttpPost("create-tag")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> CreateTag([FromBody] TagCreateDto tagDto)
+    {
+        try
+        {
+            _logger.LogDebug($"AdminController - {nameof(CreateTag)} invoked. (tagDto: {tagDto})");
+            var createdTag = await _adminHelper.CreateTagAsync(tagDto?.Name?.Trim() ?? throw new ArgumentException("Tag name cannot be null or empty."));
+            return Ok(createdTag);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in AdminController.CreateTag");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// GET /api/admin/get-tags
+    /// Retrieves a list of all tags.
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("get-tags")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> GetTags()
+    {
+        try
+        {
+            _logger.LogDebug($"AdminController - {nameof(GetTags)} invoked.");
+            var tags = await _adminHelper.GetTagsAsync();
+            return Ok(tags);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in AdminController.GetTags");
             throw;
         }
     }

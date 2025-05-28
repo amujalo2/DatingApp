@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Api.DTOs;
 using API.DTOs;
 using API.Entities;
 using API.Errors;
@@ -33,7 +34,7 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
     public async Task UpdateUser(MemberUpdateDto memberUpdateDto, string username)
     {
         var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username) ?? throw new NotFoundException("User not found");
-        
+
         _mapper.Map(memberUpdateDto, user);
 
         if (!await _unitOfWork.Complete())
@@ -43,7 +44,7 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
     public async Task<PhotoDto> AddPhoto(AddPhotoDto addPhotoDto, string username)
     {
         var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username) ?? throw new NotFoundException("User not found");
-        
+
         var result = await _photoService.AddPhotoAsync(addPhotoDto.File);
         if (result.Error != null)
             throw new BadRequestException(result.Error.Message);
@@ -73,9 +74,9 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
     public async Task SetMainPhoto(int photoId, string username)
     {
         var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username) ?? throw new NotFoundException("User not found");
-        
+
         var photo = user.Photos.FirstOrDefault(x => x.Id == photoId) ?? throw new NotFoundException("Photo not found");
-        
+
         if (photo.IsMain)
             throw new BadRequestException("This is already your main photo");
 
@@ -92,9 +93,9 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
     public async Task DeletePhoto(int photoId, string username)
     {
         var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username) ?? throw new NotFoundException("User not found");
-        
+
         var photo = await _unitOfWork.PhotoRepository.GetPhotoById(photoId) ?? throw new NotFoundException("Photo not found");
-        
+
         if (photo.IsMain)
             throw new BadRequestException("You cannot delete your main photo");
 
@@ -109,5 +110,71 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
 
         if (!await _unitOfWork.Complete())
             throw new Exception("Failed to delete the photo");
+    }
+
+    internal async Task AssignTags(int photoId, string v, List<string> tags)
+    {
+        var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(v) ?? throw new NotFoundException("User not found");
+
+        var photo = user.Photos.FirstOrDefault(x => x.Id == photoId) ?? throw new NotFoundException("Photo not found");
+
+        var distinctTagNames = tags
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Select(n => n.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+        var tagsByName = await _unitOfWork.TagRepository.GetTagsByNamesAsync(distinctTagNames) ?? throw new NotFoundException("Tags not found");
+
+        var assignedTagNames = photo.PhotoTags
+                .Select(pt => pt.Tag?.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var tag in tagsByName)
+        {
+            if (assignedTagNames.Contains(tag.Name))
+                continue;
+
+            photo.PhotoTags.Add(new PhotoTag
+            {
+                Photo = photo,
+                Tag = tag
+            });
+        }
+
+        if (!await _unitOfWork.Complete())
+            throw new Exception("Failed to assign tags to the photo");
+    }
+    public async Task<IEnumerable<object>> GetTags()
+    {
+        try
+        {
+            return await _unitOfWork.PhotoRepository.GetTagsAsStrings();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Failed to retrieve tags", ex);
+        }
+    }
+    public async Task<IEnumerable<TagDto>> GetTags(int photoId)
+    {
+        try
+        {
+            var photos = await _unitOfWork.PhotoRepository.GetPhotoWithTagsById(photoId)
+                 ?? throw new NotFoundException("Photo not found");
+
+            var tags = photos.PhotoTags.Select(pt => pt.Tag).ToList();
+
+            return _mapper.Map<IEnumerable<TagDto>>(tags);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Failed to retrieve tags", ex);
+        }
+    }
+    public async Task<List<PhotoDto>> GetPhotoWithTagsByUsernameAsync(string username)
+    {
+        var photos = await _unitOfWork.PhotoRepository.GetPhotosByUsername(username) ?? throw new NotFoundException("Photos not found");
+        return _mapper.Map<List<PhotoDto>>(photos);
     }
 }

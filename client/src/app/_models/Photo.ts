@@ -5,4 +5,5 @@ export interface Photo {
     createdAt: string
     username: string
     isApproved: boolean
+    tags?: string[]
   }

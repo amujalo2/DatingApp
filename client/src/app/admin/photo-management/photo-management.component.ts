@@ -3,9 +3,10 @@ import { AdminService } from '../../_services/admin.service';
 import { Photo } from '../../_models/Photo';
 import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { MessageService } from '../../_services/message.service';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { AccountService } from '../../_services/account.service';
 import { take } from 'rxjs';
+import { Tag } from '../../_models/Tag';
 
 @Component({
   selector: 'app-photo-management',
@@ -14,7 +15,7 @@ import { take } from 'rxjs';
   styleUrl: './photo-management.component.css'
 })
 export class PhotoManagementComponent implements OnInit {
-  private adminservice = inject(AdminService);
+  private adminService = inject(AdminService);
   private toastrService = inject(ToastrService);
   private messageService = inject(MessageService);
   private accountService = inject(AccountService);
@@ -23,14 +24,22 @@ export class PhotoManagementComponent implements OnInit {
   photos: Photo[] = [];
   isAnonymous: boolean = false;
   adminMessage: string = '';
-  
+  tags: Tag[] = [];
+  newTag: Tag = {} as Tag;
+  selectedTag: string = '';
+  filteredPhotos: any[] = [];
 
   ngOnInit(): void {
     this.approvePhotosForApproval();
+    this.getTags();
+    this.filteredPhotos = this.photos;
   }
   approvePhotosForApproval() {
-    this.adminservice.getPhotosForApproval().subscribe({
-      next: p => this.photos = p,
+    this.adminService.getPhotosForApproval().subscribe({
+      next: response => {
+        this.photos = response;
+        this.filterPhotosByTag();
+      },
       error: er => {
           this.toastrService.error('Failed to load photos');
           console.log(er);
@@ -45,7 +54,7 @@ export class PhotoManagementComponent implements OnInit {
         this.toastrService.error("Type in the message, that you have decided to send!");
       }
     }
-    this.adminservice.approvePhoto(photoId).subscribe({
+    this.adminService.approvePhoto(photoId).subscribe({
       next:  () => this.photos.splice(this.photos.findIndex(p => p.id === photoId), 1),
       error: er => {
         this.toastrService.error('Failed to approve photo');
@@ -61,7 +70,7 @@ export class PhotoManagementComponent implements OnInit {
         this.toastrService.error("Type in the message, that you have decided to send!");
       }
     }
-    this.adminservice.rejectPhoto(photoId).subscribe({
+    this.adminService.rejectPhoto(photoId).subscribe({
       next:  () => this.photos.splice(this.photos.findIndex(p => p.id === photoId), 1),
       error: er => {
         this.toastrService.error('Failed to reject photo');
@@ -109,5 +118,41 @@ export class PhotoManagementComponent implements OnInit {
       this.isAnonymous = false;
       this.adminMessage = "";
     }, 300);
+  }
+  createTag(form: NgForm) {
+    if (form.invalid) return;
+    this.adminService.addTag(this.newTag).subscribe({
+      next: () => {
+        this.newTag.name = '';
+        this.toastrService.success('Tag successfully created');
+        this.getTags();
+        form.resetForm();
+      },
+      error: err => {
+        if (err.status === 400) {
+          this.toastrService.error("You can't create duplicates!");
+        } else {
+          this.toastrService.error('Something unexpected happened: ' + err);
+        }
+      },
+    });
+  }
+  getTags() {
+    return this.adminService.getTags().subscribe({
+      next: response => {
+        this.tags = response;
+      },
+      error: error =>
+        this.toastrService.error('Something unexpected happened: ' + error),
+    });
+  }
+  filterPhotosByTag() {
+    if (!this.selectedTag) {
+      this.filteredPhotos = this.photos;
+    } else {
+      this.filteredPhotos = this.photos.filter(
+        photo => photo.tags && photo.tags.includes(this.selectedTag)
+      );
+    }
   }
 }

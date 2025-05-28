@@ -63,9 +63,7 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
             .ProjectTo<MemberDto>(mapper.ConfigurationProvider)
             .AsQueryable();
         if(isCurrentUser) query = query.IgnoreQueryFilters();
-        var member = await query.FirstOrDefaultAsync();
-        if (member == null)
-            throw new InvalidOperationException("Member not found.");
+        var member = await query.FirstOrDefaultAsync() ?? throw new InvalidOperationException("Member not found.");
         return member;
     }
 

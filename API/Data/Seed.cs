@@ -10,6 +10,19 @@ namespace API.Data;
 
 public class Seed
 {
+    public static async Task SeedTagsAsync(DataContext context)
+    {
+        if (await context.Tags.AnyAsync()) return;
+
+        var tagData = await File.ReadAllTextAsync("Data/tags.json");
+        var tags = JsonSerializer.Deserialize<List<Tag>>(tagData);
+
+        if (tags is not null)
+        {
+            context.Tags.AddRange(tags);
+            await context.SaveChangesAsync();
+        }
+    }
     public static async Task SeedUsers(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager)
     {
         if (await userManager.Users.AnyAsync()) return;
@@ -27,7 +40,7 @@ public class Seed
             new() {Name = "Admin"},
             new() {Name = "Moderator"}
         };
-        foreach(var role in roles)
+        foreach (var role in roles)
         {
             await roleManager.CreateAsync(role);
         }

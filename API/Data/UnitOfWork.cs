@@ -13,8 +13,7 @@ public class UnitOfWork(DataContext context,
     public IMessageRepository MessageRepository => messageRepository;
     public ILikesRepository LikesRepository => likesRepository;
     public IPhotoRepository PhotoRepository => photoRepository;
-    public ITagsRepository TagsRepository => tagsRepository;
-
+    public ITagsRepository TagRepository => tagsRepository;
     public async Task<bool> Complete()
     {
         return await context.SaveChangesAsync() > 0;

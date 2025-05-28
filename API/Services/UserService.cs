@@ -4,14 +4,9 @@ using API.Interfaces;
 
 namespace API.Services;
 
-public class UserService
+public class UserService(IUnitOfWork unitOfWork)
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public UserService(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task UpdateLastActive(int userId)
     {

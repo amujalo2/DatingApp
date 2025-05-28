@@ -61,6 +61,10 @@ public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoReposi
     {
         context.Tags.Add(tag);
     }
+    public async Task<IEnumerable<string>> GetTagsAsStrings()
+    {
+        return await context.Tags.Select(t => t.Name).ToListAsync();
+    }
     public async Task<IEnumerable<TagDto>> GetTags()
     {
         var query = context.Tags.AsQueryable();
