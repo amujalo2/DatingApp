@@ -3,6 +3,7 @@ import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { User } from '../_models/user';
 import { Photo } from '../_models/Photo';
+import { Tag } from '../_models/Tag';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,17 @@ export class AdminService {
   baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
 
+  getTags() {
+    return this.http.get<Tag[]>(this.baseUrl + 'admin/get-tags');
+  }
+  addTag(tag: Tag) {
+    return this.http.post(this.baseUrl + 'admin/create-tag', tag);
+  }
+  removeTag(tagName: string) {
+    return this.http.delete(this.baseUrl + `admin/delete-tag/${tagName}`, {
+      responseType: 'text',
+    });
+  }
   getUserWithRoles() {
     return this.http.get<User[]>(this.baseUrl + 'admin/users-with-roles');
   }
