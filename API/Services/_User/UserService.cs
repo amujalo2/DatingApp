@@ -102,6 +102,9 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
 
         if (photo.PublicId != null)
         {
+            if (photo.AppUserId != user.Id)
+                throw new UnauthorizedAccessException("You cannot delete this photo.");
+            // Tek sada pozovi _photoService.DeletePhotoAsync
             var result = await _photoService.DeletePhotoAsync(photo.PublicId);
             if (result.Error != null)
                 throw new BadRequestException(result.Error.Message);

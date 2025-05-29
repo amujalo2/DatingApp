@@ -48,8 +48,9 @@ namespace API.Tests
         public async Task ApprovePhotoAsync_ApprovesPhoto_WhenPhotoExists()
         {
             // Arrange
-            var photo = CreateTestPhoto();
-            var user = CreateTestUser(photo);
+            var appUserId = 2;
+            var photo = CreateTestPhoto(appUserId: appUserId);
+            var user = CreateTestUser(appUserId, photo);
 
             SetupMocksForSuccessfulApproval(photo, user);
 
@@ -65,8 +66,9 @@ namespace API.Tests
         public async Task ApprovePhotoAsync_SetAsMain_WhenNoMainPhotoExists()
         {
             // Arrange
-            var photo = CreateTestPhoto();
-            var user = CreateTestUser(photo);
+            var appUserId = 2;
+            var photo = CreateTestPhoto(appUserId: appUserId);
+            var user = CreateTestUser(appUserId, photo);
 
             SetupMocksForSuccessfulApproval(photo, user);
 
@@ -83,9 +85,10 @@ namespace API.Tests
         public async Task ApprovePhotoAsync_DoesNotSetAsMain_WhenMainPhotoAlreadyExists()
         {
             // Arrange
-            var mainPhoto = CreateTestPhoto(id: 1, isMain: true, isApproved: true);
-            var photoToApprove = CreateTestPhoto(id: 2, isMain: false, isApproved: false);
-            var user = CreateTestUser(mainPhoto, photoToApprove);
+            var appUserId = 2;
+            var mainPhoto = CreateTestPhoto(id: 1, isMain: true, isApproved: true, appUserId: appUserId);
+            var photoToApprove = CreateTestPhoto(id: 2, isMain: false, isApproved: false, appUserId: appUserId);
+            var user = CreateTestUser(appUserId, mainPhoto, photoToApprove);
 
             SetupMocksForSuccessfulApproval(photoToApprove, user);
 
@@ -113,20 +116,21 @@ namespace API.Tests
         }
 
         [Fact]
-        public async Task ApprovePhotoAsync_ThrowsException_WhenProblemApproving()
+        public async Task ApprovePhotoAsync_ThrowsNotFoundException_WhenProblemApproving()
         {
             // Arrange
-            var photo = CreateTestPhoto();
-            var user = CreateTestUser(photo);
+            var appUserId = 2;
+            var photo = CreateTestPhoto(appUserId: appUserId);
+            var user = CreateTestUser(appUserId, photo);
 
             _photoRepoMock.Setup(r => r.GetPhotoById(photo.Id)).ReturnsAsync(photo);
-            _userRepoMock.Setup(r => r.GetUserByIdAsync(user.Id)).ReturnsAsync(user);
+            _userRepoMock.Setup(r => r.GetUserByIdAsync(appUserId)).ReturnsAsync(user);
             _unitOfWorkMock.Setup(u => u.Complete()).ReturnsAsync(false); // Simulate failure
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<Exception>(
+            var ex = await Assert.ThrowsAsync<NotFoundException>(
                 () => _adminService.ApprovePhoto(photo.Id));
-            Assert.Equal("Failed to approve photo", ex.Message); // Poruka mora odgovarati onoj iz servisa
+            Assert.Equal("Failed to approve photo", ex.Message);
             _unitOfWorkMock.Verify(u => u.Complete(), Times.Once);
         }
 
@@ -151,10 +155,11 @@ namespace API.Tests
         public async Task ApprovePhotoAsync_ThrowsNotFoundException_WhenUserNotFound()
         {
             // Arrange
-            var photo = CreateTestPhoto();
+            var appUserId = 2;
+            var photo = CreateTestPhoto(appUserId: appUserId);
 
             _photoRepoMock.Setup(r => r.GetPhotoById(photo.Id)).ReturnsAsync(photo);
-            _userRepoMock.Setup(r => r.GetUserByIdAsync(photo.AppUserId))
+            _userRepoMock.Setup(r => r.GetUserByIdAsync(appUserId))
                          .ReturnsAsync((AppUser?)null);
 
             // Act & Assert
@@ -177,11 +182,11 @@ namespace API.Tests
             };
         }
 
-        private static AppUser CreateTestUser(params Photo[] photos)
+        private static AppUser CreateTestUser(int appUserId, params Photo[] photos)
         {
             return new AppUser
             {
-                Id = photos.FirstOrDefault()?.AppUserId ?? 2,
+                Id = appUserId,
                 UserName = "testuser",
                 KnownAs = "Test User",
                 Gender = "male",
