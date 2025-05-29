@@ -175,6 +175,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     /// <param name="tagDto"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
+    /// [Authorize(Policy = "ModeratePhotoRole")]
     [HttpPost("create-tag")]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -202,6 +203,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     /// Retrieves a list of all tags.
     /// </summary>
     /// <returns></returns>
+    /// [Authorize(Policy = "ModeratePhotoRole")]
     [HttpGet("get-tags")]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -231,6 +233,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
     /// <param name="name"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
+    /// [Authorize(Policy = "ModeratePhotoRole")]
     [HttpDelete("delete-tag/{name}")]
     [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -283,6 +286,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
             throw;
         }
     }
+
     /// <summary>
     /// GET /api/admin/photo-stats
     /// Retrieves statistics about photos, including approved and unapproved counts for each user.
@@ -300,9 +304,12 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
         try
         {
             _logger.LogDebug($"AdminController - {nameof(GetPhotoStats)} invoked.");
-            //    var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            //         ?? User.FindFirst("nameid")?.Value
-            //         ?? throw new Exception("Cannot get user id from token!"));
+            // var jwtToken = Request.Headers["Authorization"].FirstOrDefault();
+            // Console.WriteLine($"JWT Token: {jwtToken}");
+
+            // var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            //     ?? User.FindFirst("nameId")?.Value
+            //     ?? throw new Exception("Cannot get user id from token!"));
             var userId = 11;
             var photoStats = await _adminHelper.GetPhotoApprovalStatisticsAsync(userId) ?? throw new KeyNotFoundException("No photo stats found.");
             return Ok(photoStats);

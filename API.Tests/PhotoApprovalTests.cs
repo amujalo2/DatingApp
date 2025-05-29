@@ -49,7 +49,7 @@ namespace API.Tests
         {
             // Arrange
             var appUserId = 2;
-            var photo = CreateTestPhoto(appUserId: appUserId);
+            var photo = CreateTestPhoto(appUserId: appUserId, isMain: false, isApproved: false, id: 1);
             var user = CreateTestUser(appUserId, photo);
 
             SetupMocksForSuccessfulApproval(photo, user);
@@ -198,8 +198,8 @@ namespace API.Tests
 
         private void SetupMocksForSuccessfulApproval(Photo photo, AppUser user)
         {
-            _photoRepoMock.Setup(r => r.GetPhotoById(photo.Id)).ReturnsAsync(photo);
-            _userRepoMock.Setup(r => r.GetUserByIdAsync(user.Id)).ReturnsAsync(user);
+            _unitOfWorkMock.Setup(r => r.PhotoRepository.GetPhotoById(photo.Id)).ReturnsAsync(photo);
+            _unitOfWorkMock.Setup(r => r.UserRepository.GetUserByIdAsync(user.Id)).ReturnsAsync(user);
             _unitOfWorkMock.Setup(u => u.Complete()).ReturnsAsync(true);
         }
 
