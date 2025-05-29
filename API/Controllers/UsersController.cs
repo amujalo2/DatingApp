@@ -13,7 +13,7 @@ namespace API.Controllers;
 [Authorize]
 public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService, ILogger<UsersController> logger) : BaseApiController
 {
-    private readonly UserService _userHelper = new UserService(unitOfWork, mapper, photoService);
+    private readonly IUserService _userHelper = new UserService(unitOfWork, mapper, photoService);
     private readonly ILogger<UsersController> _logger = logger;
 
     /// <summary>

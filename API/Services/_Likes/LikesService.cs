@@ -8,7 +8,7 @@ using API.Interfaces;
 
 namespace API.Services._Likes;
 
-public class LikesService(IUnitOfWork unitOfWork)
+public class LikesService(IUnitOfWork unitOfWork) : ILikesService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
