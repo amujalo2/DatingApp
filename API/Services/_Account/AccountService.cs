@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Services._Account;
 
-public class AccountService(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper)
+public class AccountService(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper) : IAccountService
 {
     private readonly UserManager<AppUser> _userManager = userManager;
     private readonly ITokenService _tokenService = tokenService;

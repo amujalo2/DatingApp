@@ -12,7 +12,7 @@ namespace API.Controllers;
 
 public class AccountController(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper, ILogger<AccountController> logger) : BaseApiController
 {
-    private readonly AccountService _accountHelper = new AccountService(userManager, tokenService, mapper);
+    private readonly IAccountService _accountHelper = new AccountService(userManager, tokenService, mapper);
     private readonly ILogger<AccountController> _logger = logger;
 
     /// <summary>

@@ -13,7 +13,7 @@ namespace API.Controllers;
 [Authorize]
 public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<MessagesController> logger) : BaseApiController
 {
-    private readonly MessageService _messageHelper = new MessageService(unitOfWork, mapper);
+    private readonly IMessageService _messageHelper = new MessageService(unitOfWork, mapper);
     private readonly ILogger<MessagesController> _logger = logger;
 
     /// <summary>

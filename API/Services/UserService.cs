@@ -4,7 +4,7 @@ using API.Interfaces;
 
 namespace API.Services;
 
-public class UserService(IUnitOfWork unitOfWork)
+public class UserServices(IUnitOfWork unitOfWork)
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 

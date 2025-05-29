@@ -10,7 +10,7 @@ using AutoMapper;
 
 namespace API.Services._Message;
 
-public class MessageService(IUnitOfWork unitOfWork, IMapper mapper)
+public class MessageService(IUnitOfWork unitOfWork, IMapper mapper) : IMessageService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMapper _mapper = mapper;

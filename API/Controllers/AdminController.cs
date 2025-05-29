@@ -14,7 +14,7 @@ namespace API.Controllers;
 
 public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService, IHubContext<PresenceHub> hubContext, ILogger<AdminController> logger) : BaseApiController
 {
-    private readonly AdminService _adminHelper = new AdminService(userManager, unitOfWork, photoService, hubContext);
+    private readonly IAdminService _adminHelper = new AdminService(userManager, unitOfWork, photoService, hubContext);
     private readonly ILogger<AdminController> _logger = logger;
 
     /// <summary>
@@ -269,7 +269,9 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
         try
         {
             _logger.LogDebug($"AdminController - {nameof(GetUsersWithoutMainPhoto)} invoked.");
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("Cannot get username from token!"));
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("nameid")?.Value
+                ?? throw new Exception("Cannot get user id from token!"));
             var users = await _adminHelper.GetUsersWithoutMainPhoto(userId) ?? throw new KeyNotFoundException("No users without main photo found.");
             return Ok(users);
         }
@@ -295,7 +297,9 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
         try
         {
             _logger.LogDebug($"AdminController - {nameof(GetPhotoStats)} invoked.");
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("Cannot get username from token!"));
+           var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("nameid")?.Value
+                ?? throw new Exception("Cannot get user id from token!"));
             var photoStats = await _adminHelper.GetPhotoApprovalStatisticsAsync(userId) ?? throw new KeyNotFoundException("No photo stats found.");
             return Ok(photoStats);
         }

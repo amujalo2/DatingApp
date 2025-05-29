@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Services._Admin;
 
-public class AdminService(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService, IHubContext<PresenceHub> hubContext)
+public class AdminService(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService, IHubContext<PresenceHub> hubContext) : IAdminService
 {
     private readonly UserManager<AppUser> _userManager = userManager;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;

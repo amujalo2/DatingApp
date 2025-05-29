@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace API.Services._User;
 
-public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService)
+public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService) : IUserService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMapper _mapper = mapper;
@@ -113,47 +113,47 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
             throw new Exception("Failed to delete the photo");
     }
 
-    internal async Task AssignTags(int photoId, string username, List<string> tagNames)
-{
-    var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username) ?? throw new KeyNotFoundException("User not found.");
-    var photo = await _unitOfWork.PhotoRepository.GetPhotoWithTagsById(photoId) ?? throw new KeyNotFoundException("Photo not found.");
-
-    // Očisti sve postojeće tagove za ovu sliku
-    photo.PhotoTags.Clear();
-
-    // Ako je lista prazna, samo sačuvaj promene i izađi
-    var distinctTagNames = tagNames
-        .Where(n => !string.IsNullOrWhiteSpace(n))
-        .Select(n => n.Trim())
-        .Distinct(StringComparer.OrdinalIgnoreCase)
-        .ToList();
-
-    if (distinctTagNames.Count == 0)
+    public async Task AssignTags(int photoId, string username, List<string> tagNames)
     {
-        if (!await _unitOfWork.Complete())
-            throw new Exception("Failed to remove all tags from the photo");
-        return;
-    }
+        var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username) ?? throw new KeyNotFoundException("User not found.");
+        var photo = await _unitOfWork.PhotoRepository.GetPhotoWithTagsById(photoId) ?? throw new KeyNotFoundException("Photo not found.");
 
-    // Dodaj nove tagove iz liste
-    var tags = await _unitOfWork.TagRepository.GetTagsByNamesAsync(distinctTagNames);
-    if (tags == null || !tags.Any())
-        throw new KeyNotFoundException("No tags found with the provided names.");
+        // Očisti sve postojeće tagove za ovu sliku
+        photo.PhotoTags.Clear();
 
-    foreach (var tag in tags)
-    {
-        photo.PhotoTags.Add(new PhotoTag
+        // Ako je lista prazna, samo sačuvaj promene i izađi
+        var distinctTagNames = tagNames
+            .Where(n => !string.IsNullOrWhiteSpace(n))
+            .Select(n => n.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (distinctTagNames.Count == 0)
         {
-            Photo = photo,
-            PhotoId = photo.Id,
-            Tag = tag,
-            TagId = tag.Id
-        });
-    }
+            if (!await _unitOfWork.Complete())
+                throw new Exception("Failed to remove all tags from the photo");
+            return;
+        }
 
-    if (!await _unitOfWork.Complete())
-        throw new Exception("Failed to assign tags to the photo");
-}
+        // Dodaj nove tagove iz liste
+        var tags = await _unitOfWork.TagRepository.GetTagsByNamesAsync(distinctTagNames);
+        if (tags == null || !tags.Any())
+            throw new KeyNotFoundException("No tags found with the provided names.");
+
+        foreach (var tag in tags)
+        {
+            photo.PhotoTags.Add(new PhotoTag
+            {
+                Photo = photo,
+                PhotoId = photo.Id,
+                Tag = tag,
+                TagId = tag.Id
+            });
+        }
+
+        if (!await _unitOfWork.Complete())
+            throw new Exception("Failed to assign tags to the photo");
+    }
     public async Task<IEnumerable<object>> GetTags()
     {
         try
