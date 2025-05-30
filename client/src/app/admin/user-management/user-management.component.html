@@ -22,31 +22,3 @@
     </tbody>
   </table>
 </div>
-
-<div class="row mt-4">
-  <div class="col">
-    <h5>Users without main photo:</h5>
-    <ul>
-      <li *ngFor="let user of usersWithoutMainPhoto">{{ user }}</li>
-    </ul>
-  </div>
-  <div class="col">
-    <h5>Photo approval stats:</h5>
-    <table class="table table-sm">
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>Approved</th>
-          <th>Rejected</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let stat of photoStats">
-          <td>{{ stat.Username }}</td>
-          <td>{{ stat.ApprovedPhotos }}</td>
-          <td>{{ stat.RejectedPhotos }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>

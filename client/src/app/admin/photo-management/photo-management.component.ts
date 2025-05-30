@@ -6,10 +6,13 @@ import { MessageService } from '../../_services/message.service';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AccountService } from '../../_services/account.service';
 import { Tag } from '../../_models/Tag';
+import { PhotoApprovalStats } from '../../_models/photoApprovalStats';
+import { CommonModule } from '@angular/common';
+import { HasRoleDirective } from '../../_directives/has-role.directive';
 
 @Component({
   selector: 'app-photo-management',
-  imports: [ToastrModule, ToastrModule, FormsModule],
+  imports: [ToastrModule, ToastrModule, FormsModule, CommonModule, HasRoleDirective],
   templateUrl: './photo-management.component.html',
   styleUrl: './photo-management.component.css',
 })
@@ -27,11 +30,30 @@ export class PhotoManagementComponent implements OnInit {
   newTag: Tag = {} as Tag;
   selectedTag: Tag = {} as Tag;
   filteredPhotos: any[] = [];
+  usersWithoutMainPhoto: string[] = [];
+  photoStats: PhotoApprovalStats[] = [];
 
   ngOnInit(): void {
     this.approvePhotosForApproval();
     this.getTags();
     this.filteredPhotos = this.photos;
+  }
+  getUsersWithoutMainPhoto() {
+    this.adminService.getUsersWithoutMainPhoto().subscribe({
+      next: users => {
+        this.usersWithoutMainPhoto = users;
+      }
+    });
+    return this.usersWithoutMainPhoto;
+  }
+
+  getPhotoStats() {
+    this.adminService.getPhotoStats().subscribe({
+      next: stats => {
+        this.photoStats = stats;
+      }
+    });
+    return this.photoStats;
   }
   approvePhotosForApproval() {
     this.adminService.getPhotosForApproval().subscribe({

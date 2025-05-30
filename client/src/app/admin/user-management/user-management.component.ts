@@ -3,7 +3,6 @@ import { AdminService } from '../../_services/admin.service';
 import { User } from '../../_models/user';
 import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
 import { RolesModalComponent } from '../../modals/roles-modal/roles-modal.component';
-import { PhotoApprovalStats } from '../../_models/photoApprovalStats';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -17,29 +16,9 @@ export class UserManagementComponent implements OnInit{
   private modalService = inject(BsModalService)
   bsModalRef: BsModalRef<RolesModalComponent> = new BsModalRef<RolesModalComponent>();
   users: User[] = [];
-  usersWithoutMainPhoto: string[] = [];
-  photoStats: PhotoApprovalStats[] = [];
   
   ngOnInit(): void {
     this.getUserWithRoles();
-    this.getUsersWithoutMainPhoto();
-    this.getPhotoStats();
-  }
-  getUsersWithoutMainPhoto() {
-    this.adminService.getUsersWithoutMainPhoto().subscribe({
-      next: users => {
-        this.usersWithoutMainPhoto = users;
-      }
-    });
-  }
-
-  getPhotoStats() {
-    this.adminService.getPhotoStats().subscribe({
-      next: stats => {
-        this.photoStats = stats
-        console.log(this.photoStats);
-      }
-    });
   }
   getUserWithRoles() {
     this.adminService.getUserWithRoles().subscribe({
