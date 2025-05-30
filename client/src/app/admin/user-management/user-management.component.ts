@@ -18,7 +18,8 @@ export class UserManagementComponent implements OnInit{
   bsModalRef: BsModalRef<RolesModalComponent> = new BsModalRef<RolesModalComponent>();
   users: User[] = [];
   usersWithoutMainPhoto: string[] = [];
-  photoStats: PhotoApprovalStats[] = new Array<PhotoApprovalStats>();
+  photoStats: PhotoApprovalStats[] = [];
+  
   ngOnInit(): void {
     this.getUserWithRoles();
     this.getUsersWithoutMainPhoto();
@@ -34,14 +35,16 @@ export class UserManagementComponent implements OnInit{
 
   getPhotoStats() {
     this.adminService.getPhotoStats().subscribe({
-      next: stats => this.photoStats = stats
+      next: stats => {
+        this.photoStats = stats
+        console.log(this.photoStats);
+      }
     });
   }
   getUserWithRoles() {
     this.adminService.getUserWithRoles().subscribe({
       next: users => this.users = users
     });
-
   }
   openRolesModal(user: User) {
     const initialState: ModalOptions = {

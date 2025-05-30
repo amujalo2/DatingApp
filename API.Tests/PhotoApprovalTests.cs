@@ -124,14 +124,14 @@ namespace API.Tests
             var user = CreateTestUser(appUserId, photo);
 
             _photoRepoMock.Setup(r => r.GetPhotoById(photo.Id)).ReturnsAsync(photo);
-            _userRepoMock.Setup(r => r.GetUserByIdAsync(appUserId)).ReturnsAsync(user);
+            _photoRepoMock.Setup(r => r.GetUserByPhotoId(photo.Id)).ReturnsAsync(user);
             _unitOfWorkMock.Setup(u => u.Complete()).ReturnsAsync(false); // Simulate failure
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<NotFoundException>(
                 () => _adminService.ApprovePhoto(photo.Id));
             Assert.Equal("Failed to approve photo", ex.Message);
-            _unitOfWorkMock.Verify(u => u.Complete(), Times.Once);
+            _unitOfWorkMock.Verify(u => u.Complete(), Times.Once); // Promena: Times.Once umesto Times.Never
         }
 
         [Theory]
@@ -159,7 +159,7 @@ namespace API.Tests
             var photo = CreateTestPhoto(appUserId: appUserId);
 
             _photoRepoMock.Setup(r => r.GetPhotoById(photo.Id)).ReturnsAsync(photo);
-            _userRepoMock.Setup(r => r.GetUserByIdAsync(appUserId))
+            _photoRepoMock.Setup(r => r.GetUserByPhotoId(photo.Id))
                          .ReturnsAsync((AppUser?)null);
 
             // Act & Assert
@@ -198,8 +198,8 @@ namespace API.Tests
 
         private void SetupMocksForSuccessfulApproval(Photo photo, AppUser user)
         {
-            _unitOfWorkMock.Setup(r => r.PhotoRepository.GetPhotoById(photo.Id)).ReturnsAsync(photo);
-            _unitOfWorkMock.Setup(r => r.UserRepository.GetUserByIdAsync(user.Id)).ReturnsAsync(user);
+            _photoRepoMock.Setup(r => r.GetPhotoById(photo.Id)).ReturnsAsync(photo);
+            _photoRepoMock.Setup(r => r.GetUserByPhotoId(photo.Id)).ReturnsAsync(user); // OVO JE KLJUČNO
             _unitOfWorkMock.Setup(u => u.Complete()).ReturnsAsync(true);
         }
 

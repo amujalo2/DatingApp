@@ -273,10 +273,10 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
         try
         {
             _logger.LogDebug($"AdminController - {nameof(GetUsersWithoutMainPhoto)} invoked.");
-            // var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            //     ?? User.FindFirst("nameid")?.Value
-            //     ?? throw new Exception("Cannot get user id from token!"));
-            var userId = 11;
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("nameid")?.Value
+                ?? throw new Exception("Cannot get user id from token!"));
+            // var userId = 11;
             var users = await _adminHelper.GetUsersWithoutMainPhoto(userId) ?? throw new KeyNotFoundException("No users without main photo found.");
             return Ok(users);
         }
@@ -307,10 +307,10 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
             // var jwtToken = Request.Headers["Authorization"].FirstOrDefault();
             // Console.WriteLine($"JWT Token: {jwtToken}");
 
-            // var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            //     ?? User.FindFirst("nameId")?.Value
-            //     ?? throw new Exception("Cannot get user id from token!"));
-            var userId = 11;
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("nameId")?.Value
+                ?? throw new Exception("Cannot get user id from token!"));
+            // var userId = 11;
             var photoStats = await _adminHelper.GetPhotoApprovalStatisticsAsync(userId) ?? throw new KeyNotFoundException("No photo stats found.");
             return Ok(photoStats);
         }

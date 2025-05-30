@@ -73,7 +73,7 @@ public class AdminService(UserManager<AppUser> userManager, IUnitOfWork unitOfWo
             photo.IsMain = true;
 
         if (!await _unitOfWork.Complete())
-            throw new Exception("Failed to approve photo");
+            throw new NotFoundException("Failed to approve photo");
 
         // SignalR: Obavesti korisnika
 #pragma warning disable CS8604 // Possible null reference argument.
