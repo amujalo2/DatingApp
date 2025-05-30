@@ -15,6 +15,7 @@ export class AccountService {
   private presenceSerivce = inject(PresenceService);
   baseUrl = environment.apiUrl;
   currentUser = signal<User | null>(null);
+  
   roles = computed(() => {
     const user = this.currentUser();
     if (user && user.token) {
