@@ -3,44 +3,24 @@ import { AdminService } from '../../_services/admin.service';
 import { User } from '../../_models/user';
 import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
 import { RolesModalComponent } from '../../modals/roles-modal/roles-modal.component';
-import { PhotoApprovalStats } from '../../_models/photoApprovalStats';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-user-management',
+  selector: 'app-admin-user-management',
   imports: [CommonModule],
-  templateUrl: './user-management.component.html',
-  styleUrl: './user-management.component.css'
+  templateUrl: './admin-user-management.component.html',
+  styleUrl: './admin-user-management.component.css'
 })
-export class UserManagementComponent implements OnInit{
+export class AdminUserManagementComponent implements OnInit{
   private adminService = inject(AdminService);
   private modalService = inject(BsModalService)
   bsModalRef: BsModalRef<RolesModalComponent> = new BsModalRef<RolesModalComponent>();
   users: User[] = [];
-  usersWithoutMainPhoto: string[] = [];
-  photoStats: PhotoApprovalStats[] = [];
   
   ngOnInit(): void {
     this.getUserWithRoles();
-    this.getUsersWithoutMainPhoto();
-    this.getPhotoStats();
   }
-  getUsersWithoutMainPhoto() {
-    this.adminService.getUsersWithoutMainPhoto().subscribe({
-      next: users => {
-        this.usersWithoutMainPhoto = users;
-      }
-    });
-  }
-
-  getPhotoStats() {
-    this.adminService.getPhotoStats().subscribe({
-      next: stats => {
-        this.photoStats = stats
-        console.log(this.photoStats);
-      }
-    });
-  }
+  
   getUserWithRoles() {
     this.adminService.getUserWithRoles().subscribe({
       next: users => this.users = users

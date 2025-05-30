@@ -1,5 +1,5 @@
 export interface PhotoApprovalStats {
-    Username: string;
-    ApprovedPhotos: number;
-    RejectedPhotos: number;
+    username: string;
+    approvedPhotos: number;
+    unapprovedPhotos: number;
 }
