@@ -6,12 +6,12 @@ import { RolesModalComponent } from '../../modals/roles-modal/roles-modal.compon
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-user-management',
+  selector: 'app-admin-user-management',
   imports: [CommonModule],
-  templateUrl: './user-management.component.html',
-  styleUrl: './user-management.component.css'
+  templateUrl: './admin-user-management.component.html',
+  styleUrl: './admin-user-management.component.css'
 })
-export class UserManagementComponent implements OnInit{
+export class AdminUserManagementComponent implements OnInit{
   private adminService = inject(AdminService);
   private modalService = inject(BsModalService)
   bsModalRef: BsModalRef<RolesModalComponent> = new BsModalRef<RolesModalComponent>();
@@ -20,6 +20,7 @@ export class UserManagementComponent implements OnInit{
   ngOnInit(): void {
     this.getUserWithRoles();
   }
+  
   getUserWithRoles() {
     this.adminService.getUserWithRoles().subscribe({
       next: users => this.users = users

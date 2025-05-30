@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { AdminService } from '../../_services/admin.service';
 import { Photo } from '../../_models/Photo';
 import { ToastrModule, ToastrService } from 'ngx-toastr';
@@ -6,17 +6,24 @@ import { MessageService } from '../../_services/message.service';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AccountService } from '../../_services/account.service';
 import { Tag } from '../../_models/Tag';
-import { PhotoApprovalStats } from '../../_models/photoApprovalStats';
 import { CommonModule } from '@angular/common';
 import { HasRoleDirective } from '../../_directives/has-role.directive';
+import { AdminPhotoStatsComponent } from '../admin-photo-stats/admin-photo-stats.component';
 
 @Component({
-  selector: 'app-photo-management',
-  imports: [ToastrModule, ToastrModule, FormsModule, CommonModule, HasRoleDirective],
-  templateUrl: './photo-management.component.html',
-  styleUrl: './photo-management.component.css',
+  selector: 'app-admin-photo-management',
+  imports: [
+    ToastrModule,
+    ToastrModule,
+    FormsModule,
+    CommonModule,
+    HasRoleDirective,
+    AdminPhotoStatsComponent
+  ],
+  templateUrl: './admin-photo-management.component.html',
+  styleUrl: './admin-photo-management.component.css',
 })
-export class PhotoManagementComponent implements OnInit {
+export class AdminPhotoManagementComponent implements OnInit {
   private adminService = inject(AdminService);
   private toastrService = inject(ToastrService);
   private messageService = inject(MessageService);
@@ -30,31 +37,13 @@ export class PhotoManagementComponent implements OnInit {
   newTag: Tag = {} as Tag;
   selectedTag: Tag = {} as Tag;
   filteredPhotos: any[] = [];
-  usersWithoutMainPhoto: string[] = [];
-  photoStats: PhotoApprovalStats[] = [];
-
+  
   ngOnInit(): void {
     this.approvePhotosForApproval();
     this.getTags();
     this.filteredPhotos = this.photos;
   }
-  getUsersWithoutMainPhoto() {
-    this.adminService.getUsersWithoutMainPhoto().subscribe({
-      next: users => {
-        this.usersWithoutMainPhoto = users;
-      }
-    });
-    return this.usersWithoutMainPhoto;
-  }
 
-  getPhotoStats() {
-    this.adminService.getPhotoStats().subscribe({
-      next: stats => {
-        this.photoStats = stats;
-      }
-    });
-    return this.photoStats;
-  }
   approvePhotosForApproval() {
     this.adminService.getPhotosForApproval().subscribe({
       next: (response) => {
