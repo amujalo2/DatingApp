@@ -121,37 +121,36 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
         var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username) ?? throw new KeyNotFoundException("User not found.");
         var photo = await _unitOfWork.PhotoRepository.GetPhotoWithTagsById(photoId) ?? throw new KeyNotFoundException("Photo not found.");
 
-        // Očisti sve postojeće tagove za ovu sliku
-        photo.PhotoTags.Clear();
-
         // Ako je lista prazna, samo sačuvaj promene i izađi
         var distinctTagNames = tagNames
             .Where(n => !string.IsNullOrWhiteSpace(n))
             .Select(n => n.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
+        // Dohvati sve tagove iz baze koji su u listi
+        var tagsFromDb = distinctTagNames.Count > 0
+            ? await _unitOfWork.TagRepository.GetTagsByNamesAsync(distinctTagNames)
+            : new List<Tag>();
 
-        if (distinctTagNames.Count == 0)
+        var tagsToRemove = photo.PhotoTags
+            .Where(pt => pt.Tag != null && !distinctTagNames.Contains(pt.Tag.Name, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+        
+        foreach (var pt in tagsToRemove)
+            photo.PhotoTags.Remove(pt);
+
+        foreach (var tag in tagsFromDb)
         {
-            if (!await _unitOfWork.Complete())
-                throw new Exception("Failed to remove all tags from the photo");
-            return;
-        }
-
-        // Dodaj nove tagove iz liste
-        var tags = await _unitOfWork.TagRepository.GetTagsByNamesAsync(distinctTagNames);
-        if (tags == null || !tags.Any())
-            throw new KeyNotFoundException("No tags found with the provided names.");
-
-        foreach (var tag in tags)
-        {
-            photo.PhotoTags.Add(new PhotoTag
+            if (!photo.PhotoTags.Any(pt => pt.TagId == tag.Id))
             {
-                Photo = photo,
-                PhotoId = photo.Id,
-                Tag = tag,
-                TagId = tag.Id
-            });
+                photo.PhotoTags.Add(new PhotoTag
+                {
+                    Photo = photo,
+                    PhotoId = photo.Id,
+                    Tag = tag,
+                    TagId = tag.Id
+                });
+            }
         }
 
         if (!await _unitOfWork.Complete())

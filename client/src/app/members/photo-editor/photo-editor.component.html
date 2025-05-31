@@ -1,9 +1,8 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <div class="container-fluid">
   <!-- Photo Gallery -->
-  <div class="row g-4">
+  <div class="row g-4 mt-1">
     <div
-      class="col-xl-3 col-lg-4 col-md-6"
+      class="col-xl-4 col-lg-6 col-md-6 mb-4"
       *ngFor="let photo of userPhotos; trackBy: trackPhoto"
     >
       <div class="card shadow-sm h-100 photo-card">
@@ -212,114 +211,10 @@
     </div>
   </div>
 </div>
-
-<!-- Tag Editor Modal -->
-<div 
-  class="custom-modal-backdrop" 
-  *ngIf="showTagModal"
-  (click)="closeTagModal()"
-  style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1050;"
->
-  <div 
-    class="modal-dialog modal-lg"
-    style="z-index: 1060; position: relative; margin: 2rem auto;"
-    (click)="$event.stopPropagation()"
-  >
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title">
-          <i class="fas fa-tags me-2"></i>
-          Edit Photo Tags
-        </h5>
-        <button 
-          type="button" 
-          class="btn-close btn-close-white" 
-          (click)="closeTagModal()"
-        ></button>
-      </div>
-      
-      <div class="modal-body">
-        <div *ngIf="selectedPhoto" class="mb-4">
-          <div class="text-center">
-            <img 
-              [src]="selectedPhoto.url" 
-              alt="Selected photo" 
-              class="img-thumbnail"
-              style="max-height: 150px; max-width: 200px;"
-            />
-          </div>
-        </div>
-
-        <div *ngIf="availableTags.length; else loadingTags">
-          <h6 class="mb-3">Select tags for this photo:</h6>
-          <div class="row">
-            <div 
-              class="col-md-6 col-lg-4 mb-2" 
-              *ngFor="let tag of availableTags"
-            >
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  [id]="'tag-' + tag"
-                  [checked]="selectedTagNames.includes(tag)"
-                  (change)="toggleTagSelection(tag)"
-                />
-                <label class="form-check-label" [for]="'tag-' + tag">
-                  {{ tag }}
-                </label>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mt-3 p-3 bg-light rounded">
-            <h6 class="mb-2">Selected Tags:</h6>
-            <div class="d-flex flex-wrap gap-1">
-              <span 
-                class="badge bg-primary rounded-pill"
-                *ngFor="let tag of selectedTagNames"
-              >
-                {{ tag }}
-              </span>
-              <span 
-                *ngIf="selectedTagNames.length === 0" 
-                class="text-muted fst-italic"
-              >
-                No tags selected
-              </span>
-            </div>
-          </div>
-        </div>
-        
-        <ng-template #loadingTags>
-          <div class="text-center p-4">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-            <div class="mt-2">Loading tags...</div>
-          </div>
-        </ng-template>
-      </div>
-      
-      <div class="modal-footer">
-        <button 
-          type="button" 
-          class="btn btn-outline-secondary" 
-          (click)="closeTagModal()"
-        >
-          <i class="fas fa-times me-1"></i>
-          Discard
-        </button>
-        <button 
-          type="button" 
-          class="btn btn-primary"
-          (click)="savePhotoTags()"
-          [disabled]="!availableTags.length"
-        >
-          <i class="fas fa-save me-1"></i>
-          Save Changes
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Modal for Tagging Photos -->
+<app-tag-modal
+  [photo]="selectedPhoto"
+  [isVisible]="showTagModal"
+  (modalClosed)="closeTagModal()"
+  (photoUpdated)="onPhotoUpdated($event)"
+></app-tag-modal>
