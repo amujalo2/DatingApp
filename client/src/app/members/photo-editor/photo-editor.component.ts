@@ -8,10 +8,11 @@ import { Photo } from '../../_models/Photo';
 import { MembersService } from '../../_services/members.service';
 import { ToastrService } from 'ngx-toastr';
 import { Tag } from '../../_models/Tag';
+import { TagModalComponent } from '../../modals/tag-modal/tag-modal.component';
 
 @Component({
   selector: 'app-photo-editor',
-  imports: [NgIf, NgFor, NgStyle, NgClass, FileUploadModule, DecimalPipe],
+  imports: [NgIf, NgFor, NgStyle, NgClass, FileUploadModule, DecimalPipe, TagModalComponent],
   templateUrl: './photo-editor.component.html',
   styleUrl: './photo-editor.component.css'
 })
@@ -30,9 +31,6 @@ export class PhotoEditorComponent implements OnInit {
   // Modal properties
   showTagModal = false;
   selectedPhoto: Photo | null = null;
-  selectedTagNames: string[] = [];
-  availableTags: string[] = [];
-  originalSelectedTags: string[] = [];
 
   ngOnInit(): void {
     if (!this.member().photoUrl) {
@@ -194,71 +192,12 @@ export class PhotoEditorComponent implements OnInit {
   // Modal methods
   openTagModal(photo: Photo) {
     this.selectedPhoto = photo;
-    this.selectedTagNames = photo.tags ? photo.tags.map(t => t.name) : [];
-    this.originalSelectedTags = [...this.selectedTagNames];
     this.showTagModal = true;
-
-    if (!this.availableTags.length) {
-      this.loadAvailableTags();
-    }
   }
 
   closeTagModal() {
     this.showTagModal = false;
     this.selectedPhoto = null;
-    this.selectedTagNames = [];
-    this.originalSelectedTags = [];
-  }
-
-  loadAvailableTags() {
-    this.memberService.getAllTags().subscribe({
-      next: tags => {
-        this.availableTags = tags;
-      },
-      error: err => {
-        console.error('Failed to load tags', err);
-        this.toastService.error('Failed to load available tags');
-      }
-    });
-  }
-
-  toggleTagSelection(tag: string) {
-    const index = this.selectedTagNames.indexOf(tag);
-    if (index > -1) {
-      this.selectedTagNames.splice(index, 1);
-    } else {
-      this.selectedTagNames.push(tag);
-    }
-  }
-
-  savePhotoTags() {
-    if (!this.selectedPhoto) return;
-
-    this.memberService.addTagToPhoto(this.selectedPhoto.id, this.selectedTagNames).subscribe({
-      next: () => {
-        this.toastService.success('Tags updated successfully');
-        
-        // Update the photo in userPhotos array
-        const photoIndex = this.userPhotos.findIndex(p => p.id === this.selectedPhoto!.id);
-        if (photoIndex > -1) {
-          this.userPhotos[photoIndex].tags = this.selectedTagNames.map(name => ({ name } as Tag));
-        }
-        
-        // Update the photo in member's photos array
-        const memberPhotoIndex = this.member().photos.findIndex(p => p.id === this.selectedPhoto!.id);
-        if (memberPhotoIndex > -1) {
-          const updatedMember = { ...this.member() };
-          updatedMember.photos[memberPhotoIndex].tags = this.selectedTagNames.map(name => ({ name } as Tag));
-          this.memberChange.emit(updatedMember);
-        }
-        
-        this.closeTagModal();
-      },
-      error: err => {
-        console.error('Error updating tags:', err);
-        this.toastService.error('Failed to update tags');
-      }
-    });
   }
 
   removeTagFromPhoto(photo: Photo, tagName: string) {
@@ -277,6 +216,21 @@ export class PhotoEditorComponent implements OnInit {
           this.toastService.error('Failed to remove tag');
         }
       });
+    }
+  }
+  onPhotoUpdated(updatedPhoto: Photo) {
+    // Update userPhotos array
+    const photoIndex = this.userPhotos.findIndex(p => p.id === updatedPhoto.id);
+    if (photoIndex > -1) {
+      this.userPhotos[photoIndex] = updatedPhoto;
+    }
+    
+    // Update member's photos array
+    const memberPhotoIndex = this.member().photos.findIndex(p => p.id === updatedPhoto.id);
+    if (memberPhotoIndex > -1) {
+      const updatedMember = { ...this.member() };
+      updatedMember.photos[memberPhotoIndex] = updatedPhoto;
+      this.memberChange.emit(updatedMember);
     }
   }
 }
