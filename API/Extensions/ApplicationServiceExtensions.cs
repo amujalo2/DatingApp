@@ -18,7 +18,9 @@ public static class ApplicationServiceExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
     {
         services.AddControllers();
-        services.AddApplicationInsightsTelemetry();
+        services.AddApplicationInsightsTelemetry(options => {
+            options.ConnectionString = "InstrumentationKey=5cb65565-fbed-483f-bc29-94dc17e17ff2";
+        });
         services.AddDbContext<DataContext>(opt =>
         {
             opt.UseSqlServer(config.GetConnectionString("DefaultConnection"));
