@@ -18,13 +18,13 @@ public static class ApplicationServiceExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
     {
         services.AddControllers();
-        //services.AddApplicationInsightsTelemetry();
+        services.AddApplicationInsightsTelemetry();
         services.AddDbContext<DataContext>(opt =>
         {
             opt.UseSqlServer(config.GetConnectionString("DefaultConnection"));
         });
         services.AddCors();
-        // serivces
+        // services
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IPhotoService, PhotoService>();
         services.AddScoped<IAdminService, AdminService>();
