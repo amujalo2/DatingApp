@@ -75,7 +75,7 @@ public class AdminService(UserManager<AppUser> userManager, IUnitOfWork unitOfWo
         if (!await _unitOfWork.Complete())
             throw new NotFoundException("Failed to approve photo");
 
-        // SignalR: Obavesti korisnika
+        // SignalR: notify user
 #pragma warning disable CS8604 // Possible null reference argument.
         var connections = await PresenceTracker.GetConnectionsForUser(user.UserName);
 #pragma warning restore CS8604 // Possible null reference argument.
