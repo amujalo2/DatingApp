@@ -17,7 +17,7 @@ public class MessageService(IUnitOfWork unitOfWork, IMapper mapper) : IMessageSe
 
     public async Task<MessageDto> CreateMessage(CreateMessageDto createMessageDto, string username)
     {
-        if (username == createMessageDto.RecipientUsername.ToLower())
+        if (username.Equals(createMessageDto.RecipientUsername, StringComparison.CurrentCultureIgnoreCase))
             throw new BadRequestException("You cannot message yourself");
         
         var sender = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);

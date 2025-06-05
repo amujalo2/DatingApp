@@ -104,7 +104,7 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
         {
             if (photo.AppUserId != user.Id)
                 throw new UnauthorizedAccessException("You cannot delete this photo.");
-            // Tek sada pozovi _photoService.DeletePhotoAsync
+
             var result = await _photoService.DeletePhotoAsync(photo.PublicId);
             if (result.Error != null)
                 throw new BadRequestException(result.Error.Message);
@@ -121,13 +121,12 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
         var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username) ?? throw new KeyNotFoundException("User not found.");
         var photo = await _unitOfWork.PhotoRepository.GetPhotoWithTagsById(photoId) ?? throw new KeyNotFoundException("Photo not found.");
 
-        // Ako je lista prazna, samo sačuvaj promene i izađi
         var distinctTagNames = tagNames
             .Where(n => !string.IsNullOrWhiteSpace(n))
             .Select(n => n.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
-        // Dohvati sve tagove iz baze koji su u listi
+
         var tagsFromDb = distinctTagNames.Count > 0
             ? await _unitOfWork.TagRepository.GetTagsByNamesAsync(distinctTagNames)
             : new List<Tag>();
