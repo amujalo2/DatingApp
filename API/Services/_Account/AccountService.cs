@@ -45,7 +45,7 @@ public class AccountService(UserManager<AppUser> userManager, ITokenService toke
     {
         var user = await _userManager.Users
             .Include(p => p.Photos)
-            .FirstOrDefaultAsync(x => x.NormalizedUserName!.Equals(loginDto.Username, StringComparison.CurrentCultureIgnoreCase));
+            .FirstOrDefaultAsync(x => x.NormalizedUserName!.Equals(loginDto.Username));
 
         if (user == null || user.UserName == null) 
             throw new UnauthorizedException("Invalid username!");
