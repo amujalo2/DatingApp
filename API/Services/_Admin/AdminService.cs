@@ -129,7 +129,7 @@ public class AdminService(UserManager<AppUser> userManager, IUnitOfWork unitOfWo
         var tag = new Tag { Name = tagName };
 
         var existingTags = await _unitOfWork.TagRepository.GetAllTagsAsync();
-        if (existingTags.Any(t => t.Name.Equals(tag.Name, StringComparison.OrdinalIgnoreCase)))
+        if (existingTags.Any(t => t.Name.Equals(tag.Name)))
         {
             return "duplicate";
         }
