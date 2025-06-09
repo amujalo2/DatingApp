@@ -12,11 +12,12 @@ namespace API.Controllers;
 
 public class AccountController(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper, ILogger<AccountController> logger) : BaseApiController
 {
-    private readonly AccountService _accountHelper = new AccountService(userManager, tokenService, mapper);
+    private readonly IAccountService _accountHelper = new AccountService(userManager, tokenService, mapper);
     private readonly ILogger<AccountController> _logger = logger;
 
     /// <summary>
     /// POST: /api/account/register
+    /// Registers a new user with the provided registration details.
     /// </summary>
     /// <param name="registerDto"></param>
     /// <returns></returns>
@@ -45,6 +46,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
 
     /// <summary>
     /// POST: /api/account/login
+    /// Logs in a user with the provided login credentials and returns user details along with a token.
     /// </summary>
     /// <param name="loginDto"></param>
     /// <returns></returns>

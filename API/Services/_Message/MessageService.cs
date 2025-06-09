@@ -10,14 +10,14 @@ using AutoMapper;
 
 namespace API.Services._Message;
 
-public class MessageService(IUnitOfWork unitOfWork, IMapper mapper)
+public class MessageService(IUnitOfWork unitOfWork, IMapper mapper) : IMessageService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMapper _mapper = mapper;
 
     public async Task<MessageDto> CreateMessage(CreateMessageDto createMessageDto, string username)
     {
-        if (username == createMessageDto.RecipientUsername.ToLower())
+        if (username.Equals(createMessageDto.RecipientUsername, StringComparison.CurrentCultureIgnoreCase))
             throw new BadRequestException("You cannot message yourself");
         
         var sender = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);

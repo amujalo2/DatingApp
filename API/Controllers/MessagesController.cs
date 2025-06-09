@@ -13,11 +13,12 @@ namespace API.Controllers;
 [Authorize]
 public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<MessagesController> logger) : BaseApiController
 {
-    private readonly MessageService _messageHelper = new MessageService(unitOfWork, mapper);
+    private readonly IMessageService _messageHelper = new MessageService(unitOfWork, mapper);
     private readonly ILogger<MessagesController> _logger = logger;
 
     /// <summary>
     /// POST /api/messages
+    /// Creates a new message.
     /// </summary>
     /// <param name="createMessageDto"></param>
     /// <returns></returns>
@@ -47,6 +48,7 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
 
     /// <summary>
     /// GET /api/messages?container={messageParams}
+    /// Retrieves messages for the current user based on the specified parameters.
     /// </summary>
     /// <param name="messageParams"></param>
     /// <returns></returns>
@@ -77,6 +79,7 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
 
     /// <summary>
     /// GET /api/messages/thread/{username}
+    /// Retrieves the message thread between the current user and the specified username.
     /// </summary>
     /// <param name="username"></param>
     /// <returns></returns>
@@ -105,6 +108,7 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
 
     /// <summary>
     /// DELETE /api/messages/{id}
+    /// Deletes a message by its ID for the current user.
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>

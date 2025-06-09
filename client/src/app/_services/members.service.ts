@@ -9,6 +9,7 @@ import { ParseError } from '@angular/compiler';
 import { UserParams } from '../_models/userParams';
 import { AccountService } from './account.service';
 import { setPaginatedResponse, setPaginationHeaders } from './paginationHelper';
+import { Tag } from '../_models/Tag';
 
 @Injectable({
   providedIn: 'root'
@@ -55,39 +56,32 @@ export class MembersService {
     return this.http.get<Member>(this.baseUrl + 'users/' + username);
   }
   updateMember(member: Member) {
-    return this.http.put(this.baseUrl + 'users', member).pipe(
-      /* tap(() => {
-        this.members.update(memebers =>
-          memebers.map(m =>
-            m.username === member.username ? member : m
-          )
-        );
-      }) */
-    );
+    return this.http.put(this.baseUrl + 'users', member).pipe();
   }
   setMainPhoto(photo: Photo) {
-    return this.http.put(this.baseUrl + 'users/set-main-photo/' + photo.id, {}).pipe(
-      /* tap(() => {
-        this.members.update(members => members.map(m => {
-          if (m.photos.includes(photo)) {
-            m.photoUrl = photo.url;
-          }
-          return m;
-        })
-      )} 
-    ) */
-  );
+    return this.http.put(this.baseUrl + 'users/set-main-photo/' + photo.id, {}).pipe();
   }
   deletePhoto(photo: Photo) {
-    return this.http.delete(this.baseUrl + 'users/delete-photo/' + photo.id).pipe(
-      /* tap(() => {
-        this.members.update(members => members.map(m => {
-          if (m.photos.includes(photo)) {
-            m.photos = m.photos.filter(p => p.id !== photo.id);
-          }
-          return m;
-        }));
-      }) */
-    );
+    return this.http.delete(this.baseUrl + 'users/delete-photo/' + photo.id).pipe();
   } 
+  getTagsForPhoto(photoId: number) {
+    return this.http.get<Tag[]>(this.baseUrl + 'users/tags/' + photoId);
+  }
+  getPhotosWithTags() {
+    return this.http.get<Photo[]>(this.baseUrl + 'users/photos-tags');
+  }
+  getAllTags() {
+    return this.http.get<string[]>(this.baseUrl + 'users/tags');
+  }
+  addTagToPhoto(photoId: number, tags: string[]) {
+    return this.http.post(
+      `${this.baseUrl}users/assign-tags/${photoId}`,
+      JSON.stringify(tags),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
 }

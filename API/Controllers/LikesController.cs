@@ -13,11 +13,12 @@ namespace API.Controllers;
 
 public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> logger) : BaseApiController
 {
-    private readonly LikesService _likesService = new LikesService(unitOfWork);
+    private readonly ILikesService _likesService = new LikesService(unitOfWork);
     private readonly ILogger<LikesController> _logger = logger;
 
     /// <summary>
     /// POST /api/likes/{targetUserId:int}
+    /// Toggles a like for the specified user.
     /// </summary>
     /// <param name="targetUserId"></param>
     /// <returns></returns>
@@ -47,6 +48,7 @@ public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> lo
 
     /// <summary>
     /// GET /api/likes/list
+    /// Retrieves a list of IDs of users that the current user has liked.
     /// </summary>
     /// <returns></returns>
     /// [AllowAnonymous]
@@ -75,6 +77,7 @@ public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> lo
 
     /// <summary>
     /// GET /api/likes?predicate={likesParams}
+    /// Retrieves a list of users that the current user has liked or who have liked the current user based on the provided LikesParams.
     /// </summary>
     /// <param name="likesParams"></param>
     /// <returns></returns>

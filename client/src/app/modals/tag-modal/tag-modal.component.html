@@ -1,0 +1,112 @@
+<div 
+  class="photo-modal" 
+  [class.show]="isVisible()"
+  *ngIf="isVisible()"
+  (click)="closeModal()"
+>
+  <div class="modal-backdrop"></div>
+  <div 
+    class="modal-dialog modal-lg"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-tags me-2"></i>
+          Edit Photo Tags
+        </h5>
+        <button 
+          type="button" 
+          class="btn-close" 
+          (click)="closeModal()"
+        ></button>
+      </div>
+      
+      <div class="modal-body">
+        <div *ngIf="photo()" class="mb-4">
+          <div class="text-center">
+            <img 
+              [src]="photo()?.url" 
+              alt="Selected photo" 
+              class="modal-image"
+            />
+          </div>
+        </div>
+
+        <div *ngIf="availableTags().length; else loadingTags">
+          <h6 class="mb-3">Select tags for this photo:</h6>
+          <div class="row">
+            <div 
+              class="col-md-6 col-lg-4 mb-2" 
+              *ngFor="let tag of availableTags()"
+            >
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  [id]="'tag-' + tag"
+                  [checked]="isTagSelected(tag)"
+                  (change)="toggleTagSelection(tag)"
+                />
+                <label class="form-check-label" [for]="'tag-' + tag">
+                  {{ tag }}
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="selected-tags-container">
+            <h6 class="mb-2">Selected Tags:</h6>
+            <div class="d-flex flex-wrap gap-1">
+              <span 
+                class="badge bg-primary rounded-pill"
+                *ngFor="let tag of selectedTagNames()"
+              >
+                {{ tag }}
+              </span>
+              <span 
+                *ngIf="selectedTagNames().length === 0" 
+                class="text-muted fst-italic"
+              >
+                No tags selected
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <ng-template #loadingTags>
+          <div class="text-center p-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="mt-2">Loading tags...</div>
+          </div>
+        </ng-template>
+      </div>
+      
+      <div class="modal-footer">
+        <div class="action-buttons d-flex gap-2">
+          <button 
+            type="button" 
+            class="btn btn-outline-secondary" 
+            (click)="closeModal()"
+            [disabled]="isLoading()"
+          >
+            <i class="fas fa-times me-1"></i>
+            Discard
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-primary"
+            (click)="saveChanges()"
+            [disabled]="isLoading() || availableTags().length === 0"
+          >
+            <span *ngIf="isLoading()" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isLoading()" class="fas fa-save me-1"></i>
+            {{ isLoading() ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

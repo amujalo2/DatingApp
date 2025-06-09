@@ -1,4 +1,3 @@
-using System;
 using API.Extensions;
 using API.Services;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -7,11 +6,11 @@ namespace API.Helpers;
 
 public class LogUserActivity : IAsyncActionFilter
 {
-    private readonly UserService _userService;
+    private readonly UserServices _userServices;
 
-    public LogUserActivity(UserService userService)
+    public LogUserActivity(UserServices userService)
     {
-        _userService = userService;
+        _userServices = userService;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -20,6 +19,6 @@ public class LogUserActivity : IAsyncActionFilter
         if (context.HttpContext.User.Identity?.IsAuthenticated != true) return;
 
         var userId = resultContext.HttpContext.User.GetUserId();
-        await _userService.UpdateLastActive(userId);
+        await _userServices.UpdateLastActive(userId);
     }
 }

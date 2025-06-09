@@ -1,4 +1,4 @@
-using System;
+using API.DTOs;
 using API.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -10,14 +10,17 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Data;
 
 public class DataContext(DbContextOptions options) : IdentityDbContext
-    <AppUser, AppRole, int, IdentityUserClaim<int>, AppUserRole, IdentityUserLogin<int>,
-    IdentityRoleClaim<int>, IdentityUserToken<int>>(options)
+    <AppUser, AppRole, int, IdentityUserClaim<int>, AppUserRole,
+    IdentityUserLogin<int>, IdentityRoleClaim<int>,
+    IdentityUserToken<int>>(options)
 {
     public DbSet<UserLike> Likes { get; set; }
     public DbSet<Message> Messages { get; set; }
     public DbSet<Group> Groups { get; set; }
     public DbSet<Connection> Connections { get; set; }
     public DbSet<Photo> Photos { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<PhotoTag> PhotoTags { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -64,6 +67,23 @@ public class DataContext(DbContextOptions options) : IdentityDbContext
             .OnDelete(DeleteBehavior.Restrict);
         builder.Entity<Photo>()
             .HasQueryFilter(photo => photo.IsApproved);
+
+        builder.Entity<PhotoTag>()
+        .HasKey(pt => new { pt.PhotoId, pt.TagId });
+
+        builder.Entity<PhotoTag>()
+            .HasOne(pt => pt.Photo)
+            .WithMany(p => p.PhotoTags)
+            .HasForeignKey(pt => pt.PhotoId);
+
+        builder.Entity<PhotoTag>()
+            .HasOne(pt => pt.Tag)
+            .WithMany(t => t.PhotoTags)
+            .HasForeignKey(pt => pt.TagId);
+        
+        builder.Entity<Tag>()
+            .HasIndex(t => t.Name)
+            .IsUnique();
 
         builder.ApplyUtcDateTimeConverter();
     }

@@ -3,23 +3,24 @@ import { AdminService } from '../../_services/admin.service';
 import { User } from '../../_models/user';
 import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
 import { RolesModalComponent } from '../../modals/roles-modal/roles-modal.component';
-import { Title } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-user-management',
-  imports: [],
-  templateUrl: './user-management.component.html',
-  styleUrl: './user-management.component.css'
+  selector: 'app-admin-user-management',
+  imports: [CommonModule],
+  templateUrl: './admin-user-management.component.html',
+  styleUrl: './admin-user-management.component.css'
 })
-export class UserManagementComponent implements OnInit{
+export class AdminUserManagementComponent implements OnInit{
   private adminService = inject(AdminService);
   private modalService = inject(BsModalService)
   bsModalRef: BsModalRef<RolesModalComponent> = new BsModalRef<RolesModalComponent>();
   users: User[] = [];
-
+  
   ngOnInit(): void {
     this.getUserWithRoles();
   }
+  
   getUserWithRoles() {
     this.adminService.getUserWithRoles().subscribe({
       next: users => this.users = users

@@ -1,0 +1,70 @@
+@if (selectedPhoto && isModalOpen) {
+<div class="photo-modal" [class.show]="isModalOpen">
+  <div class="modal-backdrop" (click)="closePhotoModal()"></div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Photo Preview</h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="closePhotoModal()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <img
+          [src]="selectedPhoto.url"
+          class="modal-image"
+          alt="enlarged photo"
+          style="max-width: 100%; max-height: 400px"
+        />
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+          @for (tag of selectedPhoto.tags; track tag) {
+          <span class="badge bg-secondary px-3 py-2 fs-6 shadow-sm">
+            {{ tag }}
+          </span>
+          }
+        </div>
+      </div>
+      <div class="modal-footer flex-column align-items-stretch">
+        <div class="anonymity-toggle mb-3">
+          <div class="form-check form-switch">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="anonymitySwitch"
+              [(ngModel)]="isAnonymous"
+            />
+            <label class="form-check-label" for="anonymitySwitch">
+              <i class="bi bi-incognito me-1"></i> Send message
+            </label>
+          </div>
+        </div>
+
+        @if (isAnonymous) {
+        <div class="admin-message mb-3 w-100">
+          <textarea
+            class="form-control"
+            rows="3"
+            placeholder="Enter message..."
+            [(ngModel)]="adminMessage"
+          ></textarea>
+        </div>
+        }
+
+        <div class="action-buttons d-flex justify-content-center gap-2">
+          <button class="btn btn-success" (click)="approvePhoto()">
+            <i class="bi bi-check-lg"></i> Approve
+          </button>
+          <button class="btn btn-danger" (click)="rejectPhoto()">
+            <i class="bi bi-x-lg"></i> Reject
+          </button>
+          <button class="btn btn-secondary" (click)="closePhotoModal()">
+            <i class="bi bi-x"></i> Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}

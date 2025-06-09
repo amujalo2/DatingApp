@@ -1,16 +1,13 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { TabsModule } from 'ngx-bootstrap/tabs';
-import { UserManagementComponent } from "../user-management/user-management.component";
 import { HasRoleDirective } from '../../_directives/has-role.directive';
-import { PhotoManagementComponent } from "../photo-management/photo-management.component";
-import { PresenceService } from '../../_services/presence.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AccountService } from '../../_services/account.service';
-import { take } from 'rxjs';
+
+import { AdminUserManagementComponent } from '../admin-user-management/admin-user-management.component';
+import { AdminPhotoManagementComponent } from '../admin-photo-management/admin-photo-management.component';
 
 @Component({
   selector: 'app-admin-panel',
-  imports: [TabsModule, UserManagementComponent, HasRoleDirective, PhotoManagementComponent],
+  imports: [TabsModule, HasRoleDirective, AdminUserManagementComponent, AdminPhotoManagementComponent],
   templateUrl: './admin-panel.component.html',
   styleUrl: './admin-panel.component.css'
 })
