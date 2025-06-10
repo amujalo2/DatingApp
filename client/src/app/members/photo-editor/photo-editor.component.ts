@@ -9,6 +9,7 @@ import { MembersService } from '../../_services/members.service';
 import { ToastrService } from 'ngx-toastr';
 import { Tag } from '../../_models/Tag';
 import { TagModalComponent } from '../../modals/tag-modal/tag-modal.component';
+import { AuthStoreService } from '../../_services/auth-store.service';
 
 @Component({
   selector: 'app-photo-editor',
@@ -18,7 +19,7 @@ import { TagModalComponent } from '../../modals/tag-modal/tag-modal.component';
 })
 export class PhotoEditorComponent implements OnInit {
   private memberService = inject(MembersService);
-  private accountService = inject(AccountService);
+  private authStoreService = inject(AuthStoreService);
   private toastService = inject(ToastrService);
   
   member = input.required<Member>();
@@ -61,19 +62,19 @@ export class PhotoEditorComponent implements OnInit {
             updatedMember.photoUrl = updatedMember.photos[0].url;
             
             // Update current user photo if needed
-            const user = this.accountService.currentUser();
+            const user = this.authStoreService.currentUser();
             if (user) {
               user.photoUrl = updatedMember.photos[0].url;
-              this.accountService.setCurrentUser(user);
+              this.authStoreService.setCurrentUser(user);
             }
           } else if (photo.isMain && updatedMember.photos.length === 0) {
             // If no photos left, set default photo
             updatedMember.photoUrl = 'https://th.bing.com/th/id/OIP.PoS7waY4-VeqgNuBSxVUogAAAA?rs=1&pid=ImgDetMain';
-            
-            const user = this.accountService.currentUser();
+
+            const user = this.authStoreService.currentUser();
             if (user) {
               user.photoUrl = updatedMember.photoUrl;
-              this.accountService.setCurrentUser(user);
+              this.authStoreService.setCurrentUser(user);
             }
           }
           
@@ -104,10 +105,10 @@ export class PhotoEditorComponent implements OnInit {
     this.memberService.setMainPhoto(photo).subscribe({
       next: _ => {
         // Update current user photo
-        const user = this.accountService.currentUser();
+        const user = this.authStoreService.currentUser();
         if (user) {
           user.photoUrl = photo.url;
-          this.accountService.setCurrentUser(user);
+          this.authStoreService.setCurrentUser(user);
         }
 
         // Update member object
@@ -134,8 +135,8 @@ export class PhotoEditorComponent implements OnInit {
 
   initializeUploader() {
     this.uploader = new FileUploader({
-      url: this.baseUrl + 'users/add-photo',  
-      authToken: 'Bearer ' + this.accountService.currentUser()?.token,
+      url: this.baseUrl + 'users/add-photo',
+      authToken: 'Bearer ' + this.authStoreService.currentUser()?.token,
       isHTML5: true,
       allowedFileType: ['image'],
       removeAfterUpload: true,
@@ -158,10 +159,10 @@ export class PhotoEditorComponent implements OnInit {
       updatedMember.photos.push(photo);
       
       if (photo.isMain){
-        const user = this.accountService.currentUser();
+        const user = this.authStoreService.currentUser();
         if (user) {
           user.photoUrl = photo.url;
-          this.accountService.setCurrentUser(user);
+          this.authStoreService.setCurrentUser(user);
         }
         
         updatedMember.photoUrl = photo.url;

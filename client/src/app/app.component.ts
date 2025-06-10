@@ -4,6 +4,7 @@ import { NavComponent } from "./nav/nav.component";
 import { AccountService } from './_services/account.service';
 import { NgxSpinnerComponent } from 'ngx-spinner';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { AuthStoreService } from './_services/auth-store.service';
 
 @Component({
   selector: 'app-root',
@@ -12,15 +13,14 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit{
-  private accountService = inject(AccountService);
+  private authStoreService = inject(AuthStoreService);
   ngOnInit(): void {
     this.setCurrentUser();
   }
   setCurrentUser() {
-    const userStirng = localStorage.getItem('user');
-    if (!userStirng) return
-    const user = JSON.parse(userStirng);
-    this.accountService.setCurrentUser(user);
+    const userString = localStorage.getItem('user');
+    if (!userString) return
+    const user = JSON.parse(userString);
+    this.authStoreService.setCurrentUser(user);
   }
-  
 }

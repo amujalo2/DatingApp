@@ -1,21 +1,23 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 import { User } from '../_models/user';
+import { PresenceService } from './presence.service';
+import { LikesService } from './likes.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthStoreService {
-  // Private BehaviorSubject for internal state management
+  private likesService = inject(LikesService);
+  private presenceService = inject(PresenceService);
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   
-  // Public observables for components to subscribe to
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
+  
   public isLoggedIn$: Observable<boolean> = this.currentUser$.pipe(
     map(user => !!user && !!user.token)
   );
   
-  // Computed observable for user roles
   public userRoles$: Observable<string[]> = this.currentUser$.pipe(
     map(user => {
       if (user && user.token) {
@@ -51,7 +53,6 @@ export class AuthStoreService {
   });
 
   constructor() {
-    // Initialize authentication state from localStorage on service creation
     this.initializeAuthState();
   }
 
@@ -99,18 +100,12 @@ export class AuthStoreService {
    */
   setCurrentUser(user: User): void {
     try {
-      // Set default photo if not provided
-      if (!user.photoUrl) {
-        user.photoUrl = 'https://th.bing.com/th/id/OIP.PoS7waY4-VeqgNuBSxVUogAAAA?rs=1&pid=ImgDetMain';
-      }
-
-      // Persist to localStorage
       localStorage.setItem('user', JSON.stringify(user));
       
-      // Update reactive state
       this.currentUserSubject.next(user);
-      this.currentUser.set(user); // Keep signal updated for backward compatibility
-      
+      this.currentUser.set(user); 
+      this.likesService.getLikeIds();
+      this.presenceService.createHubConnection(user);
     } catch (error) {
       console.error('Error setting current user:', error);
     }
