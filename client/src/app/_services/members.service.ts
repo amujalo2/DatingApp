@@ -10,17 +10,18 @@ import { UserParams } from '../_models/userParams';
 import { AccountService } from './account.service';
 import { setPaginatedResponse, setPaginationHeaders } from './paginationHelper';
 import { Tag } from '../_models/Tag';
+import { AuthStoreService } from './auth-store.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MembersService {
   private http = inject(HttpClient);
-  private accountService = inject(AccountService)
+  private authStoreService = inject(AuthStoreService);
   baseUrl = environment.apiUrl;
   paginatedResult = signal<PaginatedResult<Member[]> | null>(null);
   memberCache = new Map();
-  user = this.accountService.currentUser();
+  user = this.authStoreService.currentUser();
   userParams = signal<UserParams>(new UserParams(this.user));
   
   resetUserParams(){

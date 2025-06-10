@@ -1,58 +1,56 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, inject, Injectable, model, signal } from '@angular/core';
-import { map, single } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { map, Observable } from 'rxjs';
 import { User } from '../_models/user';
 import { environment } from '../../environments/environment';
 import { LikesService } from './likes.service';
 import { PresenceService } from './presence.service';
+import { AuthStoreService } from './auth-store.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AccountService {
   private http = inject(HttpClient);
-  private likesService= inject(LikesService);
-  private presenceSerivce = inject(PresenceService);
+  private authStore = inject(AuthStoreService);
+  private presenceService = inject(PresenceService);
   baseUrl = environment.apiUrl;
-  currentUser = signal<User | null>(null);
-  
-  roles = computed(() => {
-    const user = this.currentUser();
-    if (user && user.token) {
-      const role = JSON.parse(atob(user.token.split('.')[1])).role;
-      return Array.isArray(role) ? role : [role];
-    }
-    return [];
-  })
-  login(model: any) {
+
+  /**
+   * Login user
+   */
+  login(model: any): Observable<any> {
     return this.http.post(this.baseUrl + 'account/login', model).pipe(
       map(user => {
         if (user) {
-          this.setCurrentUser(user as User);
-        }  
-      }));
+          this.authStore.setCurrentUser(user as User);
+        }
+        return user;
+      })
+    );
   }
-  register(model: any) {
+
+  /**
+   * Register new user
+   */
+  register(model: any): Observable<any> {
     return this.http.post(this.baseUrl + 'account/register', model).pipe(
       map(user => {
         if (user) {
-          this.setCurrentUser(user as User);
-        }  
+          this.authStore.setCurrentUser(user as User);
+        }
         return user;
-      }));
+      })
+    );
   }
-  setCurrentUser(user: User) {
-    if (!user.photoUrl) {
-      user.photoUrl = 'https://th.bing.com/th/id/OIP.PoS7waY4-VeqgNuBSxVUogAAAA?rs=1&pid=ImgDetMain';
-    }
-    localStorage.setItem('user', JSON.stringify(user));
-    this.currentUser.set(user as User);
-    this.likesService.getLikeIds();
-    this.presenceSerivce.createHubConnection(user);
+
+
+  /**
+   * Logout user and cleanup
+   */
+  logout(): void {
+    // Clear auth state using AuthStoreService
+    this.authStore.clearAuthState();
+    this.presenceService.stopHubConnection();
   }
-  logout() {
-    localStorage.removeItem('user');
-    this.currentUser.set(null);
-    this.presenceSerivce.stopHubConnection();
-  } 
 }

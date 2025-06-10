@@ -6,6 +6,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { HasRoleDirective } from '../_directives/has-role.directive';
 import { CommonModule } from '@angular/common';
+import { AuthStoreService } from '../_services/auth-store.service';
 
 @Component({
   selector: 'app-nav',
@@ -15,10 +16,11 @@ import { CommonModule } from '@angular/common';
   styleUrl: './nav.component.css'
 })
 export class NavComponent {
-  accountService = inject(AccountService);
+  private accountService = inject(AccountService);
+  private authStoreService = inject(AuthStoreService);
   private router = inject(Router);
   private toastr = inject(ToastrService);
-  isCollapsed = true; // Add this property to control navbar collapse state
+  isCollapsed = true;
 
   model: any = {};
   login() {
@@ -37,6 +39,6 @@ export class NavComponent {
     this.isCollapsed = !this.isCollapsed;
   }
   currentUser() {
-    return this.accountService.currentUser();
+    return this.authStoreService.currentUser();
   }
 }
