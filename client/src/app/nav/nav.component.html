@@ -9,7 +9,7 @@
 
       <div class="navbar-collapse" [ngClass]="{'collapse': isCollapsed}">
           <ul class="navbar-nav mr-auto">
-              @if (currentUser()) 
+              @if (isLoggedIn$ | async) 
               {
                   <li class="nav-item">
                       <a routerLink="/members" routerLinkActive="active" class="nav-link">Matches</a>
@@ -29,25 +29,41 @@
               </li>
           </ul>
 
-          @if (currentUser()) 
+          @if (isLoggedIn$ | async) 
           {
               <div dropdown class="dropdown ms-auto">
-                <img class="me-2" src="{{currentUser()?.photoUrl  || 'https://th.bing.com/th/id/OIP.PoS7waY4-VeqgNuBSxVUogAAAA?rs=1&pid=ImgDetMain'}}" alt="User main image">
-                  <a dropdownToggle class="dropdown-toggle text-light text-decoration-none">Welcome {{ currentUser()?.knownAs}}</a>
-                  <div *dropdownMenu class="dropdown-menu">
-                      <a routerLink="/member/edit" class="dropdown-item">Edit profile</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" (click)="logout()">Logout</a>
-                  </div>
+                <img class="me-2" 
+                     [src]="(currentUser$ | async)?.photoUrl || 'https://th.bing.com/th/id/OIP.PoS7waY4-VeqgNuBSxVUogAAAA?rs=1&pid=ImgDetMain'" 
+                     [alt]="(currentUser$ | async)?.knownAs + ' profile image'">
+                <a dropdownToggle class="dropdown-toggle text-light text-decoration-none">
+                  Welcome {{ (currentUser$ | async)?.knownAs }}
+                </a>
+                <div *dropdownMenu class="dropdown-menu">
+                    <a routerLink="/member/edit" class="dropdown-item">Edit profile</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" (click)="logout()">Logout</a>
+                </div>
               </div>
           }
 
-          @if (!currentUser()) 
+          @if (!(isLoggedIn$ | async)) 
           {
               <form #loginForm="ngForm" (ngSubmit)="login()" autocomplete="off" class="d-flex mt-2 mt-md-0 ms-auto">
-                  <input name="username" [(ngModel)]="model.username" class="form-control ms-2" type="text" placeholder="Username">
-                  <input name="password" [(ngModel)]="model.password" class="form-control ms-2" type="password" placeholder="Password">
-                  <button class="btn btn-success ms-2" type="submit">Login</button>
+                  <input name="username" 
+                         [(ngModel)]="model.username" 
+                         class="form-control ms-2" 
+                         type="text" 
+                         placeholder="Username"
+                         required>
+                  <input name="password" 
+                         [(ngModel)]="model.password" 
+                         class="form-control ms-2" 
+                         type="password" 
+                         placeholder="Password"
+                         required>
+                  <button class="btn btn-success ms-2" 
+                          type="submit" 
+                          [disabled]="!loginForm.valid">Login</button>
               </form>
           }
       </div>
