@@ -18,8 +18,16 @@ export class MemberListsComponent implements OnInit{
     if (!this.membersService.paginatedResult()) this.loadMembers();
   }
   loadMembers() {
-    this.membersService.getMembers();
+    this.membersService.getMembers().subscribe({
+      next: (response) => {
+        //console.log('Učitan broj članova:', response.body?.length ?? 0);
+      },
+      error: (err) => {
+        console.error('Greška pri učitavanju članova:', err);
+      }
+    });
   }
+
   resetFilters(){
     this.membersService.resetUserParams();
     this.loadMembers();
