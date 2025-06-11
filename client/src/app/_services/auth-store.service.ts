@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { BehaviorSubject, Observable, map } from 'rxjs';
+import { BehaviorSubject, Observable, map, shareReplay } from 'rxjs';
 import { User } from '../_models/user';
 import { PresenceService } from './presence.service';
 import { LikesService } from './likes.service';
@@ -12,10 +12,13 @@ export class AuthStoreService {
   private presenceService = inject(PresenceService);
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   
-  public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
-  
+  public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable().pipe(
+    shareReplay(1)
+  );
+
   public isLoggedIn$: Observable<boolean> = this.currentUser$.pipe(
-    map(user => !!user && !!user.token)
+    map(user => !!user && !!user.token),
+    shareReplay(1)
   );
   
   public userRoles$: Observable<string[]> = this.currentUser$.pipe(
@@ -31,7 +34,8 @@ export class AuthStoreService {
         }
       }
       return [];
-    })
+    }),
+    shareReplay(1)
   );
   
   // Signal for backward compatibility with existing code
@@ -151,7 +155,8 @@ export class AuthStoreService {
    */
   hasRole(role: string): Observable<boolean> {
     return this.userRoles$.pipe(
-      map(roles => roles.includes(role))
+      map(roles => roles.includes(role)),
+      shareReplay(1)
     );
   }
 
