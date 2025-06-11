@@ -50,29 +50,34 @@ export class MembersService {
   }
 
   getMembers(): Observable<HttpResponse<Member[]>> {
-  const currentParams = this.userParams();
-  const cacheKey = Object.values(currentParams).join('-');
-  const response = this.memberCache.get(cacheKey);
+    const currentParams = this.userParams();
+    const cacheKey = Object.values(currentParams).join('-');
+    const response = this.memberCache.get(cacheKey);
 
-  if (response) {
-    setPaginatedResponse(response, this.paginatedResult);
-    return of(response);
-  }
-
-  let params = setPaginationHeaders(currentParams.pageNumber, currentParams.pageSize);
-  params = params.append('minAge', currentParams.minAge.toString());
-  params = params.append('maxAge', currentParams.maxAge.toString());
-  params = params.append('gender', currentParams.gender);
-  params = params.append('orderBy', currentParams.orderBy);
-
-  return this.http.get<Member[]>(this.baseUrl + 'users', { params, observe: 'response' }).pipe(
-    tap(response => {
+    if (response) {
       setPaginatedResponse(response, this.paginatedResult);
-      this.memberCache.set(cacheKey, response);
-    }),
-    shareReplay(1)
-  );
-}
+      return of(response);
+    }
+
+    let params = setPaginationHeaders(
+      currentParams.pageNumber,
+      currentParams.pageSize
+    );
+    params = params.append('minAge', currentParams.minAge.toString());
+    params = params.append('maxAge', currentParams.maxAge.toString());
+    params = params.append('gender', currentParams.gender);
+    params = params.append('orderBy', currentParams.orderBy);
+
+    return this.http
+      .get<Member[]>(this.baseUrl + 'users', { params, observe: 'response' })
+      .pipe(
+        tap((response) => {
+          setPaginatedResponse(response, this.paginatedResult);
+          this.memberCache.set(cacheKey, response);
+        }),
+        shareReplay(1)
+      );
+  }
 
   getMember(username: string): Observable<Member> {
     const member: Member = [...this.memberCache.values()]
@@ -150,7 +155,8 @@ export class MembersService {
       )
       .pipe(
         tap(() => {
-          this.invalidateTagCache();
+          // invalidate Tag Cache
+          this.invalidateAllMemberCache();
         }),
         shareReplay(1)
       );
@@ -169,13 +175,5 @@ export class MembersService {
 
   private invalidateAllMemberCache(): void {
     this.memberCache.clear();
-  }
-
-  private invalidateTagCache(): void {
-    this.invalidateAllMemberCache();
-  }
-
-  getCurrentUser$(): Observable<any> {
-    return this.authStoreService.currentUser$;
   }
 }
