@@ -1,8 +1,7 @@
 import { Component, inject, input, OnInit, output } from '@angular/core';
 import { Member } from '../../_models/member';
-import { DecimalPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
+import { CommonModule, DecimalPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { FileUploader, FileUploadModule } from 'ng2-file-upload';
-import { AccountService } from '../../_services/account.service';
 import { environment } from '../../../environments/environment';
 import { Photo } from '../../_models/Photo';
 import { MembersService } from '../../_services/members.service';
@@ -10,10 +9,11 @@ import { ToastrService } from 'ngx-toastr';
 import { Tag } from '../../_models/Tag';
 import { TagModalComponent } from '../../modals/tag-modal/tag-modal.component';
 import { AuthStoreService } from '../../_services/auth-store.service';
+import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-photo-editor',
-  imports: [NgIf, NgFor, NgStyle, NgClass, FileUploadModule, DecimalPipe, TagModalComponent],
+  imports: [NgIf, NgFor, NgStyle, NgClass, FileUploadModule, DecimalPipe, TagModalComponent, CommonModule],
   templateUrl: './photo-editor.component.html',
   styleUrl: './photo-editor.component.css'
 })
@@ -22,6 +22,45 @@ export class PhotoEditorComponent implements OnInit {
   private authStoreService = inject(AuthStoreService);
   private toastService = inject(ToastrService);
   
+  private selectedTagsSubject = new BehaviorSubject<string[]>([]);
+  private approvalStatusSubject = new BehaviorSubject<'all' | 'approved' | 'unapproved'>('all');
+  private userPhotosSubject = new BehaviorSubject<Photo[]>([]);
+
+  getSelectedTagsSubjectValue() {
+    return this.selectedTagsSubject.value;
+  }
+
+  getApprovalStatusSubjectValue() {
+    return this.approvalStatusSubject.value;
+  }
+
+  selectedTags$ = this.selectedTagsSubject.asObservable();
+  approvalStatus$ = this.approvalStatusSubject.asObservable();
+  userPhotos$ = this.userPhotosSubject.asObservable();
+
+  filteredPhotos$: Observable<Photo[]> = combineLatest([
+    this.userPhotos$,
+    this.selectedTags$,
+    this.approvalStatus$
+  ]).pipe(
+    map(([photos, selectedTags, approvalStatus]) => {
+      return photos.filter(photo => {
+        // Filter po statusu
+        const statusMatch =
+          approvalStatus === 'all' ||
+          (approvalStatus === 'approved' && photo.isApproved) ||
+          (approvalStatus === 'unapproved' && !photo.isApproved);
+
+        // Filter po tagovima
+        const tagsMatch =
+          selectedTags.length === 0 ||
+          (photo.tags && selectedTags.every(tag => photo.tags?.some(t => t.name === tag)));
+
+        return statusMatch && tagsMatch;
+      });
+    })
+  );
+
   member = input.required<Member>();
   userPhotos: Photo[] = [];
   uploader?: FileUploader;
@@ -49,13 +88,12 @@ export class PhotoEditorComponent implements OnInit {
     if (confirm('Are you sure you want to delete this photo?')) {
       this.memberService.deletePhoto(photo).subscribe({
         next: _ => {
-          // Remove from userPhotos array
           this.userPhotos = this.userPhotos.filter(p => p.id !== photo.id);
+          this.userPhotosSubject.next([...this.userPhotos]); 
           
-          // Update member object
           const updatedMember = { ...this.member() };
           updatedMember.photos = updatedMember.photos.filter(p => p.id !== photo.id);
-          
+
           // If deleted photo was main, set first available photo as main
           if (photo.isMain && updatedMember.photos.length > 0) {
             updatedMember.photos[0].isMain = true;
@@ -68,7 +106,6 @@ export class PhotoEditorComponent implements OnInit {
               this.authStoreService.setCurrentUser(user);
             }
           } else if (photo.isMain && updatedMember.photos.length === 0) {
-            // If no photos left, set default photo
             updatedMember.photoUrl = 'https://th.bing.com/th/id/OIP.PoS7waY4-VeqgNuBSxVUogAAAA?rs=1&pid=ImgDetMain';
 
             const user = this.authStoreService.currentUser();
@@ -93,6 +130,7 @@ export class PhotoEditorComponent implements OnInit {
     this.memberService.getPhotosWithTags().subscribe({
       next: photos => {
         this.userPhotos = photos;
+        this.userPhotosSubject.next(photos); 
       },
       error: err => {
         console.error('Error loading photos:', err);
@@ -153,7 +191,7 @@ export class PhotoEditorComponent implements OnInit {
       
       // Add to userPhotos array
       this.userPhotos.push(photo);
-      
+      this.userPhotosSubject.next([...this.userPhotos]);
       // Update member object
       const updatedMember = {...this.member()}
       updatedMember.photos.push(photo);
@@ -220,18 +258,52 @@ export class PhotoEditorComponent implements OnInit {
     }
   }
   onPhotoUpdated(updatedPhoto: Photo) {
-    // Update userPhotos array
     const photoIndex = this.userPhotos.findIndex(p => p.id === updatedPhoto.id);
     if (photoIndex > -1) {
       this.userPhotos[photoIndex] = updatedPhoto;
+      this.userPhotosSubject.next([...this.userPhotos]); 
     }
     
-    // Update member's photos array
     const memberPhotoIndex = this.member().photos.findIndex(p => p.id === updatedPhoto.id);
     if (memberPhotoIndex > -1) {
       const updatedMember = { ...this.member() };
       updatedMember.photos[memberPhotoIndex] = updatedPhoto;
       this.memberChange.emit(updatedMember);
     }
+  }
+  setSelectedTags(tags: string[]) {
+    this.selectedTagsSubject.next(tags);
+  }
+
+  setApprovalStatus(status: 'all' | 'approved' | 'unapproved') {
+    this.approvalStatusSubject.next(status);
+  }
+  getAllUniqueTags(): string[] {
+    const allTags = new Set<string>();
+    this.userPhotos.forEach(photo => {
+      photo.tags?.forEach(tag => allTags.add(tag.name));
+    });
+    return Array.from(allTags).sort();
+  }
+  isTagSelected(tagName: string): boolean {
+    return this.selectedTagsSubject.value.includes(tagName);
+  }
+  toggleTag(tagName: string, isSelected: boolean): void {
+    const currentTags = this.selectedTagsSubject.value;
+    let updatedTags: string[];
+    
+    if (isSelected) {
+      updatedTags = currentTags.includes(tagName) 
+        ? currentTags 
+        : [...currentTags, tagName];
+    } else {
+      updatedTags = currentTags.filter(tag => tag !== tagName);
+    }
+    
+    this.selectedTagsSubject.next(updatedTags);
+  }
+  clearAllFilters(): void {
+    this.selectedTagsSubject.next([]);
+    this.approvalStatusSubject.next('all');
   }
 }
