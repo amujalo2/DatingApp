@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using API.Data;
 using API.Entities;
+using API.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,8 +49,8 @@ public static class IdentityServiceExtensions
                     };
                 });
         services.AddAuthorizationBuilder()
-            .AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"))
-            .AddPolicy("ModeratePhotoRole", policy => policy.RequireRole("Admin", "Moderator"));
+            .AddPolicy("RequireAdminRole", policy => policy.RequireRole(RoleNames.Admin))
+            .AddPolicy("ModeratePhotoRole", policy => policy.RequireRole(RoleNames.Admin, RoleNames.Moderator));
         
         return services;
     }

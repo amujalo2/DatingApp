@@ -42,14 +42,14 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
         if(userParams.Gender != null){
             query=query.Where(x => x.Gender == userParams.Gender);
         }
-        var minDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MaxAge-1));
-        var maxDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MinAge));
+        var minDate = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MaxAge-1));
+        var maxDate = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MinAge));
         
-        query = query.Where(x => x.DateOfBirth >= minDob && x.DateOfBirth <= maxDob);
+        query = query.Where(x => x.DateOfBirth >= minDate && x.DateOfBirth <= maxDate);
 
         query = userParams.OrderBy switch 
         {
-            "created" => query.OrderByDescending(x => x.Created),
+            UserOrderBy.Created => query.OrderByDescending(x => x.Created),
             _ => query.OrderByDescending(x => x.LastActive)
         };
         return await PagedList<MemberDto>.CreateAsync(query.ProjectTo<MemberDto>(mapper.ConfigurationProvider),

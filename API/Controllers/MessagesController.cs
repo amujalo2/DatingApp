@@ -11,9 +11,9 @@ using Serilog;
 namespace API.Controllers;
 
 [Authorize]
-public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<MessagesController> logger) : BaseApiController
+public class MessagesController(IMessageService messageService, ILogger<MessagesController> logger) : BaseApiController
 {
-    private readonly IMessageService _messageHelper = new MessageService(unitOfWork, mapper);
+    private readonly IMessageService _messageHelper = messageService;
     private readonly ILogger<MessagesController> _logger = logger;
 
     /// <summary>
@@ -127,7 +127,7 @@ public class MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<
             _logger.LogDebug($"MessagesController - {nameof(DeleteMessage)} invoked. (id: {id})");
             var username = User.GetUsername();
             await _messageHelper.DeleteMessage(id, username);
-            return Ok();
+            return NoContent();
         }
         catch (Exception ex)
         {
