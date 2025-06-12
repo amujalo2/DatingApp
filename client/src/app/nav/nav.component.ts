@@ -6,6 +6,9 @@ import { Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { HasRoleDirective } from '../_directives/has-role.directive';
 import { CommonModule } from '@angular/common';
+import { AuthStoreService } from '../_services/auth-store.service';
+import { Observable } from 'rxjs';
+import { User } from '../_models/user';
 
 @Component({
   selector: 'app-nav',
@@ -15,15 +18,26 @@ import { CommonModule } from '@angular/common';
   styleUrl: './nav.component.css'
 })
 export class NavComponent {
-  accountService = inject(AccountService);
+  private accountService = inject(AccountService);
+  private authStoreService = inject(AuthStoreService);
   private router = inject(Router);
   private toastr = inject(ToastrService);
-  isCollapsed = true; // Add this property to control navbar collapse state
+  isCollapsed = true;
 
   model: any = {};
+
+  currentUser$: Observable<User | null> = this.authStoreService.currentUser$;
+  isLoggedIn$: Observable<boolean> = this.authStoreService.isLoggedIn$;
+  isAdmin$: Observable<boolean> = this.authStoreService.hasRole('Admin');
+  isModerator$: Observable<boolean> = this.authStoreService.hasRole('Moderator');
+  userRoles$: Observable<string[]> = this.authStoreService.userRoles$;
+
   login() {
     this.accountService.login(this.model).subscribe({
-      next: _ => this.router.navigateByUrl('/members'),
+      next: _ => {
+        this.router.navigateByUrl('/members');
+        this.model = {};
+      },
       error: error => {
         this.toastr.error(error.error.message);
       }
@@ -35,8 +49,5 @@ export class NavComponent {
   }
   toggleNavbar() {
     this.isCollapsed = !this.isCollapsed;
-  }
-  currentUser() {
-    return this.accountService.currentUser();
   }
 }

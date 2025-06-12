@@ -4,23 +4,26 @@ import { NavComponent } from "./nav/nav.component";
 import { AccountService } from './_services/account.service';
 import { NgxSpinnerComponent } from 'ngx-spinner';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { AuthStoreService } from './_services/auth-store.service';
+import { BusyService } from './_services/busy.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavComponent, NgxSpinnerComponent, FontAwesomeModule],
+  imports: [RouterOutlet, NavComponent, NgxSpinnerComponent, FontAwesomeModule, CommonModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit{
-  private accountService = inject(AccountService);
+  private authStoreService = inject(AuthStoreService);
+  busyService = inject(BusyService);
   ngOnInit(): void {
     this.setCurrentUser();
   }
   setCurrentUser() {
-    const userStirng = localStorage.getItem('user');
-    if (!userStirng) return
-    const user = JSON.parse(userStirng);
-    this.accountService.setCurrentUser(user);
+    const userString = localStorage.getItem('user');
+    if (!userString) return
+    const user = JSON.parse(userString);
+    this.authStoreService.setCurrentUser(user);
   }
-  
 }

@@ -8,6 +8,7 @@ import { ToastrService } from 'ngx-toastr';
 import { PhotoEditorComponent } from "../photo-editor/photo-editor.component";
 import { DatePipe } from '@angular/common';
 import { TimeagoModule } from 'ngx-timeago';
+import { AuthStoreService } from '../../_services/auth-store.service';
 
 @Component({
   selector: 'app-member-edit',
@@ -23,14 +24,14 @@ export class MemberEditComponent implements OnInit {
     }
   }
   member?: Member;
-  private accountService = inject(AccountService);
+  private authStoreService = inject(AuthStoreService);
   private memberService = inject(MembersService);
   private toastr = inject(ToastrService);
   ngOnInit(): void {
     this.loadMember();
   }
   loadMember() {
-    const user = this.accountService.currentUser();
+    const user = this.authStoreService.currentUser();
     if(!user) return;
     this.memberService.getMember(user.username).subscribe(member => {
       this.member = member;

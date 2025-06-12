@@ -1,9 +1,124 @@
 <div class="container-fluid">
+  
+  <!-- Filter Controls Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-opacity-0">
+          <h5 class="mb-0">
+            <i class="fas fa-filter me-2"></i>
+            Filter Photos
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Approval Status Filter -->
+            <div class="col-md-4">
+              <label class="form-label fw-bold">
+                <i class="fas fa-check-circle me-1"></i>
+                Approval Status
+              </label>
+              <select 
+                class="form-select"
+                [value]="getApprovalStatusSubjectValue()"
+                (change)="setApprovalStatus($any($event.target).value)"
+              >
+                <option value="all">All Photos</option>
+                <option value="approved">Approved Only</option>
+                <option value="unapproved">Awaiting Approval</option>
+              </select>
+            </div>
+
+            <!-- Tag Filter -->
+            <div class="col-md-8">
+              <label class="form-label fw-bold">
+                <i class="fas fa-tags me-1"></i>
+                Filter by Tags
+              </label>
+              <div class="d-flex flex-wrap gap-2">
+                <!-- Get unique tags from photos -->
+                <ng-container *ngFor="let tag of getAllUniqueTags()">
+                  <div class="form-check">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      [id]="'tag-' + tag"
+                      [checked]="isTagSelected(tag)"
+                      (change)="toggleTag(tag, $any($event.target).checked)"
+                    >
+                    <label class="form-check-label" [for]="'tag-' + tag">
+                      <span class="badge bg-secondary">{{ tag }}</span>
+                    </label>
+                  </div>
+                </ng-container>
+                <span 
+                  *ngIf="getAllUniqueTags().length === 0" 
+                  class="text-muted fst-italic"
+                >
+                  No tags available
+                </span>
+              </div>
+              
+              <!-- Clear filters button -->
+              <div class="mt-2" *ngIf="getSelectedTagsSubjectValue().length > 0 || getApprovalStatusSubjectValue() !== 'all'">
+                <button 
+                  type="button" 
+                  class="btn btn-outline-secondary btn-sm"
+                  (click)="clearAllFilters()"
+                >
+                  <i class="fas fa-times me-1"></i>
+                  Clear All Filters
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="row mb-3" *ngIf="(filteredPhotos$ | async) as filteredPhotos">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">
+          <i class="fas fa-images me-2"></i>
+          Your Photos
+        </h4>
+        <span class="badge bg-info fs-6">
+          {{ filteredPhotos.length }} of {{ userPhotos.length }} photos
+          <span *ngIf="getSelectedTagsSubjectValue().length > 0 || getApprovalStatusSubjectValue() !== 'all'">
+            (filtered)
+          </span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Results Message -->
+  <div class="row" *ngIf="(filteredPhotos$ | async)?.length === 0 && userPhotos.length > 0">
+    <div class="col-12">
+      <div class="alert alert-info text-center">
+        <i class="fas fa-search fa-2x mb-3"></i>
+        <h5>No photos match your current filters</h5>
+        <p class="mb-2">Try adjusting your filter criteria or clearing all filters.</p>
+        <button 
+          type="button" 
+          class="btn btn-outline-primary"
+          (click)="clearAllFilters()"
+        >
+          <i class="fas fa-times me-1"></i>
+          Clear All Filters
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Photo Gallery -->
   <div class="row g-4 mt-1">
     <div
       class="col-xl-4 col-lg-6 col-md-6 mb-4"
-      *ngFor="let photo of userPhotos; trackBy: trackPhoto"
+      *ngFor="let photo of filteredPhotos$ | async; trackBy: trackPhoto"
     >
       <div class="card shadow-sm h-100 photo-card">
         <!-- Image Container -->
@@ -211,6 +326,7 @@
     </div>
   </div>
 </div>
+
 <!-- Modal for Tagging Photos -->
 <app-tag-modal
   [photo]="selectedPhoto"

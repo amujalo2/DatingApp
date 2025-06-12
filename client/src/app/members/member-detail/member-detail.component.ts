@@ -10,6 +10,7 @@ import { MessageService } from '../../_services/message.service';
 import { PresenceService } from '../../_services/presence.service';
 import { AccountService } from '../../_services/account.service';
 import { HubConnection, HubConnectionState } from '@microsoft/signalr';
+import { AuthStoreService } from '../../_services/auth-store.service';
 
 @Component({
   selector: 'app-member-detail',
@@ -23,7 +24,7 @@ export class MemberDetailComponent implements OnInit, OnDestroy{
   private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private accountService = inject(AccountService);
+  private authStoreService = inject(AuthStoreService);
   member: Member = {} as Member;
   images: GalleryItem[] = [];
   activeTab?: TabDirective;
@@ -55,7 +56,7 @@ export class MemberDetailComponent implements OnInit, OnDestroy{
   }
 
   onRouteParamsChange() {
-    const user = this.accountService.currentUser();
+    const user = this.authStoreService.currentUser();
     if(!user) return;
     if(this.messageService.hubConnection?.state === HubConnectionState.Connected && this.activeTab?.heading === 'Messages') {
       this.messageService.hubConnection.stop().then(() => {
@@ -72,7 +73,7 @@ export class MemberDetailComponent implements OnInit, OnDestroy{
       queryParamsHandling: 'merge'
     });
     if (this.activeTab.heading == 'Messages') {
-      const user = this.accountService.currentUser();
+      const user = this.authStoreService.currentUser();
       if (!user) return;
       this.messageService.createHubConnection(user, this.member.username);
     } else {

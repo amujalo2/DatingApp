@@ -6,6 +6,7 @@ import { AdminService } from '../../_services/admin.service';
 import { MessageService } from '../../_services/message.service';
 import { AccountService } from '../../_services/account.service';
 import { ToastrService } from 'ngx-toastr';
+import { AuthStoreService } from '../../_services/auth-store.service';
 
 @Component({
   selector: 'app-photo-modal',
@@ -22,9 +23,8 @@ export class PhotoModalComponent implements OnChanges {
 
   private adminService = inject(AdminService);
   private messageService = inject(MessageService);
-  private accountService = inject(AccountService);
   private toastrService = inject(ToastrService);
-
+  private authStoreService = inject(AuthStoreService);
   isAnonymous: boolean = false;
   adminMessage: string = '';
 
@@ -39,7 +39,7 @@ export class PhotoModalComponent implements OnChanges {
   private openModal(): void {
     this.isAnonymous = false;
     this.adminMessage = '';
-    const user = this.accountService.currentUser();
+    const user = this.authStoreService.currentUser();
     if (!user || !this.selectedPhoto) return;
     this.messageService.createHubConnection(user, this.selectedPhoto.username);
     document.body.classList.add('modal-open');
@@ -109,7 +109,7 @@ export class PhotoModalComponent implements OnChanges {
   private sendMessage(): void {
     const formattedMessage = `Regarding your photo: ${this.adminMessage}`;
     if (this.selectedPhoto?.username) {
-      const user = this.accountService.currentUser();
+      const user = this.authStoreService.currentUser();
       if (!user) {
         this.toastrService.error('You must be logged in to send messages');
         return;
