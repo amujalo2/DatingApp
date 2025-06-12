@@ -264,12 +264,39 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
         try
         {
             _logger.LogDebug($"UsersController - {nameof(GetPhotosWithTagsByUsername)} invoked.");
-            var photos = await _userHelper.GetPhotoWithTagsByUsernameAsync(User.GetUsername()); 
+            var photos = await _userHelper.GetPhotoWithTagsByUsernameAsync(User.GetUsername());
             return Ok(photos);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception in UsersController.GetPhotosWithTagsByUsername");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// GET /api/users/approved-photos
+    /// Retrieves all approved photo from every user
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("approved-photos")]
+    [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesErrorResponseType(typeof(void))]
+    public async Task<ActionResult> GetAllApprovedPhotos()
+    {
+        try
+        {
+            _logger.LogDebug($"UsersController - {nameof(GetAllApprovedPhotos)} invoked.");
+            var photos = await _userHelper.GetAllApprovedPhotosAsync();
+            return Ok(photos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in UsersController.GetAllApprovedPhotos");
             throw;
         }
     }

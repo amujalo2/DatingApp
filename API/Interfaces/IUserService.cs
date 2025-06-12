@@ -16,5 +16,6 @@ namespace API.Interfaces
         Task<IEnumerable<object>> GetTags();
         Task<IEnumerable<TagDto>> GetTags(int photoId);
         Task<List<PhotoDto>> GetPhotoWithTagsByUsernameAsync(string username);
+        Task<IEnumerable<object>> GetAllApprovedPhotosAsync();
     }
 }

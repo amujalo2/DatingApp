@@ -134,7 +134,7 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
         var tagsToRemove = photo.PhotoTags
             .Where(pt => pt.Tag != null && !distinctTagNames.Contains(pt.Tag.Name, StringComparer.OrdinalIgnoreCase))
             .ToList();
-        
+
         foreach (var pt in tagsToRemove)
             photo.PhotoTags.Remove(pt);
 
@@ -186,5 +186,9 @@ public class UserService(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService p
     {
         var photos = await _unitOfWork.PhotoRepository.GetPhotosByUsername(username) ?? throw new NotFoundException("Photos not found");
         return _mapper.Map<List<PhotoDto>>(photos);
+    }
+    public async Task<IEnumerable<object>> GetAllApprovedPhotosAsync()
+    {
+        return await _unitOfWork.PhotoRepository.GetApprovedPhotos();
     }
 }

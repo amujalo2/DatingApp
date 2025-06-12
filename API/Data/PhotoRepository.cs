@@ -45,6 +45,11 @@ public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoReposi
         return await query.ProjectTo<PhotoForApprovalDto>(mapper.ConfigurationProvider)
             .ToListAsync();
     }
+    public async Task<IEnumerable<PhotoForApprovalDto>> GetApprovedPhotos()
+    {
+        var query = context.Photos.IgnoreQueryFilters().Where(x => x.IsApproved == true).AsQueryable();
+        return await query.ProjectTo<PhotoForApprovalDto>(mapper.ConfigurationProvider).ToListAsync();
+    }
     public async Task<AppUser?> GetUserByPhotoId(int photoId)
     {
         return await context.Users

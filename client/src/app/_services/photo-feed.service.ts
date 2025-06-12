@@ -1,3 +1,4 @@
+// photo-feed.service.ts
 import { Injectable, inject, OnDestroy } from '@angular/core';
 import { 
   interval, 
@@ -8,12 +9,13 @@ import {
   startWith,
   catchError,
   of,
-  BehaviorSubject,
+  Subject,
   takeUntil,
-  Subject
+  map
 } from 'rxjs';
 import { Photo } from '../_models/Photo';
 import { MembersService } from './members.service';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -21,65 +23,56 @@ import { MembersService } from './members.service';
 export class PhotoFeedService implements OnDestroy {
   private membersService = inject(MembersService);
   private destroy$ = new Subject<void>();
+  private isDestroyed = false;
   
-  // Control stream state
-  private isStreamActive$ = new BehaviorSubject<boolean>(false);
+  constructor(private http: HttpClient) {}
   
-  photoFeed$: Observable<Photo[]> = interval(10000).pipe(
-    startWith(0), 
-    switchMap(() => this.membersService.getPhotosWithTags()),
-    distinctUntilChanged((prev, curr) => 
-      JSON.stringify(prev) === JSON.stringify(curr)
-    ),
-    catchError(error => {
-      console.error('Error fetching photos:', error);
-      return of([]);
+  private getApprovedPhotos(): Observable<Photo[]> {
+    return this.http
+      .get<Photo[]>(this.membersService.baseUrl + 'users/approved-photos')
+      .pipe(
+        map(photos => photos.filter(photo => photo.isApproved)),
+        catchError(error => {
+          console.error('Error fetching photos:', error);
+          return of([]);
+        })
+      );
+  }
+  
+  approvedPhotoFeed$: Observable<Photo[]> = interval(10000).pipe(
+    startWith(0),
+    switchMap(() => {
+      if (this.isDestroyed) {
+        return of([]);
+      }
+      return this.getApprovedPhotos();
     }),
-    shareReplay(1), 
+    distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+    shareReplay({ bufferSize: 1, refCount: true }), 
     takeUntil(this.destroy$)
   );
 
-  // Filtered stream for approved photos only
-  approvedPhotoFeed$: Observable<Photo[]> = this.photoFeed$.pipe(
-    switchMap(photos => of(photos.filter(photo => photo.isApproved))),
-    shareReplay(1)
-  );
-
-  // Stream control methods
-  startPhotoFeed(): void {
-    this.isStreamActive$.next(true);
-  }
-
-  stopPhotoFeed(): void {
-    this.isStreamActive$.next(false);
-  }
-
-  getStreamStatus(): Observable<boolean> {
-    return this.isStreamActive$.asObservable();
-  }
-
-  // Get latest photos count
   getPhotosCount$(): Observable<number> {
     return this.approvedPhotoFeed$.pipe(
-      switchMap(photos => of(photos.length)),
-      shareReplay(1)
+      map(photos => photos.length)
     );
   }
 
-  // Get photos by specific member
   getPhotosByMember$(username: string): Observable<Photo[]> {
     return this.approvedPhotoFeed$.pipe(
-      switchMap(photos => of(photos.filter(photo => 
-        photo.username === username
-      ))),
-      shareReplay(1)
+      map(photos => photos.filter(photo => photo.username === username))
     );
   }
 
+  destroy(): void {
+    if (!this.isDestroyed) {
+      this.isDestroyed = true;
+      this.destroy$.next();
+      this.destroy$.complete();
+    }
+  }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.isStreamActive$.complete();
+    this.destroy();
   }
 }
