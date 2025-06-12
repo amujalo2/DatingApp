@@ -40,13 +40,13 @@ public class LikesRepository(DataContext context, IMapper mapper) : ILikesReposi
         IQueryable<MemberDto> query;
         switch(likesParams.Predicate)
         {
-            case "liked":
+            case LikesPredicate.Liked:
                 query = likes
                     .Where(x => x.SourceUserId == likesParams.UserID)
                     .Select(x => x.LikedUser)
                     .ProjectTo<MemberDto>(mapper.ConfigurationProvider);
                 break;
-            case "likedBy":
+            case LikesPredicate.LikedBy:
                 query = likes
                     .Where(x => x.LikedUserId == likesParams.UserID)
                     .Select(x => x.SourceUser)

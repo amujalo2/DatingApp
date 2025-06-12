@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Data;
 using API.DTOs;
@@ -8,6 +9,7 @@ using API.Entities;
 using API.Errors;
 using API.Interfaces;
 using API.SignalR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -107,15 +109,16 @@ public class AdminService(UserManager<AppUser> userManager, IUnitOfWork unitOfWo
         if (!await _unitOfWork.Complete())
             throw new Exception("Failed to reject photo");
 
-#pragma warning disable CS8604 // Possible null reference argument.
-        var connections = await PresenceTracker.GetConnectionsForUser(user.UserName);
-#pragma warning restore CS8604 // Possible null reference argument.
-        if (connections != null && connections.Count > 0)
+        if (!string.IsNullOrEmpty(user.UserName))
         {
-            await _hubContext.Clients.Clients(connections).SendAsync("PhotoRejected", new
+            var connections = await PresenceTracker.GetConnectionsForUser(user.UserName);
+            if (connections != null && connections.Count > 0)
             {
-                message = "Your photo has been rejected!"
-            });
+                await _hubContext.Clients.Clients(connections).SendAsync("PhotoRejected", new
+                {
+                    message = "Your photo has been rejected!"
+                });
+            }
         }
     }
     public async Task<object> CreateTagAsync(string tagName)
@@ -169,5 +172,13 @@ public class AdminService(UserManager<AppUser> userManager, IUnitOfWork unitOfWo
         if (stats == null || !stats.Any())
             throw new KeyNotFoundException("No photo approval stats found for the current user.");
         return stats.ToList();
+    }
+   
+   public int GetUserIdFromClaimsPrincipal(ClaimsPrincipal user)
+    {
+        var idString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? user.FindFirst("nameid")?.Value
+                    ?? throw new Exception("Cannot get user id from token!");
+        return int.Parse(idString);
     }
 }

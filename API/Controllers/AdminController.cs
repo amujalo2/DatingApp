@@ -12,9 +12,9 @@ using System.Security.Claims;
 
 namespace API.Controllers;
 
-public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService, IHubContext<PresenceHub> hubContext, ILogger<AdminController> logger) : BaseApiController
+public class AdminController(IAdminService adminService, ILogger<AdminController> logger) : BaseApiController
 {
-    private readonly IAdminService _adminHelper = new AdminService(userManager, unitOfWork, photoService, hubContext);
+    private readonly IAdminService _adminHelper = adminService;
     private readonly ILogger<AdminController> _logger = logger;
 
     /// <summary>
@@ -246,8 +246,11 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
         try
         {
             _logger.LogDebug($"AdminController - {nameof(DeleteTag)} invoked. (name: {name})");
-            await _adminHelper.RemoveTagByNameAsync(name?.Trim() ?? throw new ArgumentException("Tag name cannot be null or empty."));
-            return Ok(new { message = "Tag successfully removed." });
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Tag name cannot be null or empty.");
+
+            await _adminHelper.RemoveTagByNameAsync(name.Trim());
+            return NoContent();
         }
         catch (Exception ex)
         {
@@ -273,9 +276,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
         try
         {
             _logger.LogDebug($"AdminController - {nameof(GetUsersWithoutMainPhoto)} invoked.");
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst("nameid")?.Value
-                ?? throw new Exception("Cannot get user id from token!"));
+            var userId = _adminHelper.GetUserIdFromClaimsPrincipal(User);
             var users = await _adminHelper.GetUsersWithoutMainPhoto(userId) ?? throw new KeyNotFoundException("No users without main photo found.");
             return Ok(users);
         }
@@ -303,9 +304,7 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
         try
         {
             _logger.LogDebug($"AdminController - {nameof(GetPhotoStats)} invoked.");
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst("nameId")?.Value
-                ?? throw new Exception("Cannot get user id from token!"));
+            var userId = _adminHelper.GetUserIdFromClaimsPrincipal(User);
             var photoStats = await _adminHelper.GetPhotoApprovalStatisticsAsync(userId) ?? throw new KeyNotFoundException("No photo stats found.");
             return Ok(photoStats);
         }

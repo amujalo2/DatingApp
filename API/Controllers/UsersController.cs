@@ -11,9 +11,9 @@ using Serilog;
 namespace API.Controllers;
 
 [Authorize]
-public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService, ILogger<UsersController> logger) : BaseApiController
+public class UsersController(IUserService userService, ILogger<UsersController> logger) : BaseApiController
 {
-    private readonly IUserService _userHelper = new UserService(unitOfWork, mapper, photoService);
+    private readonly IUserService _userHelper = userService;
     private readonly ILogger<UsersController> _logger = logger;
 
     /// <summary>
@@ -182,7 +182,7 @@ public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoServi
         {
             _logger.LogDebug($"UsersController - {nameof(DeletePhoto)} invoked. (photoId: {photoId})");
             await _userHelper.DeletePhoto(photoId, User.GetUsername());
-            return Ok();
+            return NoContent();
         }
         catch (Exception ex)
         {

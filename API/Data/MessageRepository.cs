@@ -56,8 +56,8 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
             .AsQueryable();
         query = messageParams.Container switch
         {
-            "Inbox" => query.Where(x => x.RecipientUsername == messageParams.Username && x.RecipientDeleted == false),
-            "Outbox" => query.Where(x => x.SenderUsername == messageParams.Username && x.SenderDeleted == false),
+            MessageContainer.Inbox => query.Where(x => x.RecipientUsername == messageParams.Username && x.RecipientDeleted == false),
+            MessageContainer.Outbox => query.Where(x => x.SenderUsername == messageParams.Username && x.SenderDeleted == false),
             _ => query.Where(x => x.RecipientUsername == messageParams.Username && x.DateRead == null && x.RecipientDeleted == false)
         };
         return await PagedList<MessageDto>.CreateAsync(query, messageParams.PageNumber, messageParams.PageSize);

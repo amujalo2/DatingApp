@@ -25,7 +25,7 @@ public class ImprovedExceptionMiddleware
         
         _exceptionMappings = new Dictionary<Type, HttpStatusCode>
         {
-            // Sistemski izuzeci
+            // System exceptions
             { typeof(UnauthorizedAccessException), HttpStatusCode.Unauthorized },
             { typeof(AuthenticationException), HttpStatusCode.Unauthorized },
             { typeof(KeyNotFoundException), HttpStatusCode.NotFound },
@@ -34,7 +34,7 @@ public class ImprovedExceptionMiddleware
             { typeof(FormatException), HttpStatusCode.BadRequest },
             { typeof(TimeoutException), HttpStatusCode.RequestTimeout },
             
-            // Prilagođeni izuzeci
+            // Customized exceptions
             { typeof(NotFoundException), HttpStatusCode.NotFound },
             { typeof(BadRequestException), HttpStatusCode.BadRequest },
             { typeof(UnauthorizedException), HttpStatusCode.Unauthorized },
@@ -49,14 +49,14 @@ public class ImprovedExceptionMiddleware
         {
             await _next(context);
             
-            // Uhvati 404 za endpoints koji ne postoje
+            // Catch 404 for endpoints that do not exist
             if (context.Response.StatusCode == 404 && !context.Response.HasStarted)
             {
                 context.Response.ContentType = "application/json";
                 var response = new ApiException(404, "Endpoint nije pronađen", "URL putanja nije validna");
                 await WriteResponse(context, response);
             }
-            // Uhvati 401 za neautorizovane pristupe
+            // Catch 401 for unauthorized accesses
             else if (context.Response.StatusCode == 401 && !context.Response.HasStarted)
             {
                 context.Response.ContentType = "application/json";
@@ -64,7 +64,7 @@ public class ImprovedExceptionMiddleware
                 Console.WriteLine("TEST\n");
                 await WriteResponse(context, response);
             }
-            // Uhvati 403 za zabranjene pristupe
+            // Catch 403 for forbidden accesses
             else if (context.Response.StatusCode == 403 && !context.Response.HasStarted)
             {
                 context.Response.ContentType = "application/json";
@@ -84,7 +84,7 @@ public class ImprovedExceptionMiddleware
         string errorMessage = exception.Message;
         string? details = null;
 
-        // Proveri da li izuzetak odgovara nekom od predefinisanih tipova
+        // Check if the exception corresponds to one of the predefined types.
         foreach (var mapping in _exceptionMappings)
         {
             if (exception.GetType() == mapping.Key || exception.GetType().IsSubclassOf(mapping.Key))
@@ -94,7 +94,7 @@ public class ImprovedExceptionMiddleware
             }
         }
 
-        // Log različite informacije u zavisnosti od ozbiljnosti greške
+        // Log different information depending on the severity of the error.
         if (statusCode == HttpStatusCode.InternalServerError)
         {
             _logger.LogError(exception, $"KRITIČNA GREŠKA: {errorMessage}");

@@ -78,7 +78,10 @@ public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoReposi
         command.CommandText = "GetUsersWithoutMainPhoto";
         command.CommandType = CommandType.StoredProcedure;
 
-        command.Parameters.Add(new SqlParameter("@CurrentUserId", currentUserId));
+        var userIdParam = command.CreateParameter();
+        userIdParam.ParameterName = "@CurrentUserId";
+        userIdParam.Value = currentUserId;
+        command.Parameters.Add(userIdParam);
 
         await context.Database.OpenConnectionAsync();
 
@@ -90,16 +93,18 @@ public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoReposi
         }
         return result;
     }
+
     public async Task<List<PhotoApprovalStatisticsDto>> GetPhotoStatsApprovalAsync(int currentUserId)
     {
         var result = new List<PhotoApprovalStatisticsDto>();
 
         using var command = context.Database.GetDbConnection().CreateCommand();
-
         command.CommandText = "GetPhotoStatsApproval";
         command.CommandType = CommandType.StoredProcedure;
 
-        var userIdParam = new SqlParameter("@CurrentUserId", currentUserId);
+        var userIdParam = command.CreateParameter();
+        userIdParam.ParameterName = "@CurrentUserId";
+        userIdParam.Value = currentUserId;
         command.Parameters.Add(userIdParam);
 
         await context.Database.OpenConnectionAsync();
