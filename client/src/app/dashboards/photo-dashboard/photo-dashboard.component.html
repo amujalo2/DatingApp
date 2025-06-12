@@ -1,0 +1,38 @@
+<div class="container py-4">
+  <h3 class="mb-4">Real-Time Approved Photo Feed</h3>
+
+  <div *ngIf="!loading">
+    <div *ngIf="photos.length > 0; else noPhotos" class="row g-4">
+      <div 
+        class="col-12 col-sm-6 col-md-4 col-lg-3" 
+        *ngFor="let photo of photos">
+        <div class="card shadow-sm h-100">
+          <img 
+            [src]="photo.url" 
+            class="card-img-top" 
+            [alt]="photo.username" 
+            style="height: 220px; object-fit: cover;"
+            loading="lazy">
+          <div class="card-body d-flex flex-column">
+            <h6 class="card-title mb-2">{{ photo.username }}</h6>
+            <!-- Uklonjen tags deo -->
+            <div class="mt-auto">
+              <span class="badge bg-success" *ngIf="photo.isApproved">Approved</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <ng-template #noPhotos>
+      <div class="row">
+        <div class="col-12">
+          <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i>
+            No approved photos found.
+          </div>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</div>

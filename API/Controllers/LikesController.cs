@@ -11,9 +11,9 @@ using Serilog;
 
 namespace API.Controllers;
 
-public class LikesController(IUnitOfWork unitOfWork, ILogger<LikesController> logger) : BaseApiController
+public class LikesController(ILikesService likesService, ILogger<LikesController> logger) : BaseApiController
 {
-    private readonly ILikesService _likesService = new LikesService(unitOfWork);
+    private readonly ILikesService _likesService = likesService;
     private readonly ILogger<LikesController> _logger = logger;
 
     /// <summary>

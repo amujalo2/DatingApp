@@ -10,9 +10,9 @@ using Serilog;
 
 namespace API.Controllers;
 
-public class AccountController(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper, ILogger<AccountController> logger) : BaseApiController
+public class AccountController(IAccountService accountService, ILogger<AccountController> logger) : BaseApiController
 {
-    private readonly IAccountService _accountHelper = new AccountService(userManager, tokenService, mapper);
+    private readonly IAccountService _accountHelper = accountService;
     private readonly ILogger<AccountController> _logger = logger;
 
     /// <summary>

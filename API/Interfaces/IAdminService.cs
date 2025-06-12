@@ -1,4 +1,5 @@
 using System;
+using System.Security.Claims;
 using API.DTOs;
 
 namespace API.Interfaces;
@@ -15,4 +16,5 @@ public interface IAdminService
     Task RemoveTagByNameAsync(string name);
     Task<List<string>> GetUsersWithoutMainPhoto(int currentUserId);
     Task<List<PhotoApprovalStatisticsDto>> GetPhotoApprovalStatisticsAsync(int currentUserId);
+    int GetUserIdFromClaimsPrincipal(ClaimsPrincipal user);
 }
